@@ -532,6 +532,75 @@
       renderReminders();
     }
     updateStatus();
+
+    // デイリーサマリーもチェック
+    checkDailySummary();
+  }
+
+  // ========== デイリーサマリー（毎朝7時に前日分をまとめて通知） ==========
+  function checkDailySummary() {
+    const now = new Date();
+    const hour = now.getHours();
+    const todayStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+
+    // 7時より前なら何もしない
+    if (hour < 7) return;
+
+    // 今日すでに送信済みならスキップ
+    const lastSent = localStorage.getItem('dailySummaryLastSent');
+    if (lastSent === todayStr) return;
+
+    // 前日の0:00〜23:59:59 の範囲を計算
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const yesterdayStart = todayMidnight - 24 * 60 * 60 * 1000;
+    const yesterdayEnd = todayMidnight - 1;
+
+    // 前日に作成されたリマインダーを収集
+    const yesterdayReminders = reminders.filter(r =>
+      r.createdAt >= yesterdayStart && r.createdAt <= yesterdayEnd
+    );
+
+    // 送信済みとしてマーク（前日分が0件でも記録して再チェックを防ぐ）
+    localStorage.setItem('dailySummaryLastSent', todayStr);
+
+    if (yesterdayReminders.length === 0) return;
+
+    // 前日の日付表示
+    const yd = new Date(yesterdayStart);
+    const dateLabel = (yd.getMonth()+1) + '月' + yd.getDate() + '日';
+
+    // メモ一覧を組み立て
+    const memoList = yesterdayReminders.map((r, i) => {
+      return (i+1) + '. ' + r.memo;
+    }).join('\n');
+
+    const title = '📋 ' + dateLabel + 'のリマインダーまとめ（' + yesterdayReminders.length + '件）';
+    const body = memoList;
+
+    // 通知を送信
+    if (Notification.permission !== 'granted') return;
+
+    if (swRegistration && swRegistration.active) {
+      swRegistration.active.postMessage({
+        type: 'SHOW_NOTIFICATION',
+        payload: {
+          id: 'daily_summary_' + todayStr,
+          title: title,
+          body: body
+        }
+      });
+    } else {
+      try {
+        new Notification(title, {
+          body: body,
+          tag: 'daily_summary_' + todayStr,
+          vibrate: [200,100,200,100,200],
+          requireInteraction: true
+        });
+      } catch(e) { console.log('Daily summary notification error:', e); }
+    }
+
+    console.log('📋 Daily summary sent:', title);
   }
 
   // メインポーリング (10秒間隔)
