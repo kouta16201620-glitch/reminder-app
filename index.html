@@ -45,7 +45,6 @@
     padding: 0 16px 100px;
   }
 
-  /* Header */
   .header {
     padding: 24px 0 8px;
     text-align: center;
@@ -69,16 +68,13 @@
     letter-spacing: 0.5px;
     color: var(--text-primary);
   }
-  .header h1 span {
-    color: var(--accent);
-  }
+  .header h1 span { color: var(--accent); }
   .header p {
     font-size: 12px;
     color: var(--text-muted);
     margin-top: 4px;
   }
 
-  /* Notification permission banner */
   .permission-banner {
     background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,146,60,0.1));
     border: 1px solid rgba(251,191,36,0.3);
@@ -108,7 +104,6 @@
     font-family: inherit;
   }
 
-  /* Section card */
   .card {
     background: var(--bg-card);
     border-radius: var(--radius);
@@ -136,7 +131,6 @@
     border-radius: 50%;
   }
 
-  /* Memo input */
   .memo-area {
     width: 100%;
     min-height: 100px;
@@ -156,19 +150,14 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-glow);
   }
-  .memo-area::placeholder {
-    color: var(--text-muted);
-  }
+  .memo-area::placeholder { color: var(--text-muted); }
 
-  /* Checkbox grid */
   .time-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
-  .time-option {
-    position: relative;
-  }
+  .time-option { position: relative; }
   .time-option input {
     position: absolute;
     opacity: 0;
@@ -188,9 +177,7 @@
     user-select: none;
     -webkit-user-select: none;
   }
-  .time-option label:active {
-    transform: scale(0.97);
-  }
+  .time-option label:active { transform: scale(0.97); }
   .time-option input:checked + label {
     border-color: var(--accent);
     background: var(--accent-glow);
@@ -225,10 +212,7 @@
     opacity: 1;
     transform: scale(1);
   }
-  .time-label {
-    display: flex;
-    flex-direction: column;
-  }
+  .time-label { display: flex; flex-direction: column; }
   .time-label .value {
     font-size: 14px;
     font-weight: 500;
@@ -240,7 +224,6 @@
     margin-top: 1px;
   }
 
-  /* Submit button */
   .submit-btn {
     width: 100%;
     padding: 16px;
@@ -258,17 +241,9 @@
     position: relative;
     overflow: hidden;
   }
-  .submit-btn:active {
-    transform: scale(0.98);
-    opacity: 0.9;
-  }
-  .submit-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
-  }
+  .submit-btn:active { transform: scale(0.98); opacity: 0.9; }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-  /* Toast */
   .toast {
     position: fixed;
     bottom: 30px;
@@ -287,15 +262,9 @@
     pointer-events: none;
     white-space: nowrap;
   }
-  .toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-  /* Active reminders */
-  .reminder-list {
-    margin-top: 20px;
-  }
+  .reminder-list { margin-top: 20px; }
   .reminder-item {
     background: var(--bg-input);
     border: 1px solid var(--border);
@@ -312,12 +281,9 @@
     margin-bottom: 8px;
     word-break: break-word;
     line-height: 1.5;
+    padding-right: 30px;
   }
-  .reminder-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
+  .reminder-tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .reminder-tag {
     font-size: 11px;
     padding: 3px 10px;
@@ -331,6 +297,14 @@
     color: var(--success);
     text-decoration: line-through;
     opacity: 0.6;
+  }
+  .reminder-tag.pending {
+    position: relative;
+  }
+  .reminder-tag .countdown {
+    font-size: 9px;
+    opacity: 0.7;
+    margin-left: 4px;
   }
   .reminder-delete {
     position: absolute;
@@ -364,13 +338,33 @@
   }
   .empty-state .icon { font-size: 32px; margin-bottom: 8px; }
 
-  /* Animations */
+  /* status bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 0;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
   @keyframes fadeSlideIn {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 </style>
@@ -383,6 +377,11 @@
     <p>メモして、忘れない</p>
   </div>
 
+  <div class="status-bar" id="statusBar" style="display:none">
+    <div class="status-dot"></div>
+    <span id="statusText">監視中: 0件のリマインダー</span>
+  </div>
+
   <div class="permission-banner" id="permBanner">
     <div class="icon">⚠️</div>
     <div class="info">
@@ -392,13 +391,11 @@
     <button onclick="requestPermission()">許可する</button>
   </div>
 
-  <!-- Memo input -->
   <div class="card">
     <div class="card-label">メモ内容</div>
     <textarea class="memo-area" id="memoInput" placeholder="リマインドしたい内容を入力..."></textarea>
   </div>
 
-  <!-- Time selection -->
   <div class="card">
     <div class="card-label">リマインド時刻を選択</div>
     <div class="time-grid">
@@ -461,12 +458,10 @@
     </div>
   </div>
 
-  <!-- Submit -->
   <button class="submit-btn" id="submitBtn" onclick="addReminder()">
     リマインダーを設定する
   </button>
 
-  <!-- Active reminders -->
   <div class="card" id="reminderSection" style="display:none;">
     <div class="card-label">設定中のリマインダー</div>
     <div id="reminderList"></div>
@@ -481,14 +476,36 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // ========== Service Worker Registration ==========
+  // ==========================================================
+  // 修正版: setTimeout ではなく「ポーリング方式」を採用
+  // - すべてのリマインドを絶対時刻で localStorage に保存
+  // - 15秒ごとに「今通知すべきものがあるか」をチェック
+  // - Service Worker が停止しても、メインスレッドが生きていれば通知可能
+  // - 両方が協調して動作するため、信頼性が大幅に向上
+  // ==========================================================
+
   let swRegistration = null;
 
+  // ========== Service Worker 登録 ==========
   async function registerSW() {
     if ('serviceWorker' in navigator) {
       try {
         swRegistration = await navigator.serviceWorker.register('sw.js');
         console.log('SW registered');
+
+        // SW にポーリング開始を指示
+        navigator.serviceWorker.ready.then((reg) => {
+          if (reg.active) {
+            reg.active.postMessage({ type: 'START_POLLING' });
+          }
+        });
+
+        // SW からのチェック要求を受け取る
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data.type === 'CHECK_REMINDERS') {
+            checkAndFireReminders();
+          }
+        });
       } catch (e) {
         console.log('SW registration failed:', e);
       }
@@ -496,7 +513,7 @@
   }
   registerSW();
 
-  // ========== Notification Permission ==========
+  // ========== 通知許可 ==========
   function checkPermission() {
     const banner = document.getElementById('permBanner');
     if (!('Notification' in window)) {
@@ -527,62 +544,117 @@
 
   checkPermission();
 
-  // ========== Reminder Storage ==========
-  let reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+  // ========== リマインダー保存 ==========
+  let reminders = JSON.parse(localStorage.getItem('reminders_v2') || '[]');
 
   function saveReminders() {
-    localStorage.setItem('reminders', JSON.stringify(reminders));
+    localStorage.setItem('reminders_v2', JSON.stringify(reminders));
   }
 
-  // ========== Schedule Notification ==========
-  function scheduleNotification(id, memo, delay, label) {
-    // Try Service Worker first (background support)
+  // ========== 通知を送信 ==========
+  function fireNotification(tagId, memo, label) {
+    if (Notification.permission !== 'granted') return;
+
+    // Service Worker 経由で通知（バックグラウンドでも表示可能）
     if (swRegistration && swRegistration.active) {
       swRegistration.active.postMessage({
-        type: 'SCHEDULE_NOTIFICATION',
+        type: 'SHOW_NOTIFICATION',
         payload: {
-          id: id,
+          id: tagId,
           title: '🔔 リマインド: ' + label,
-          body: memo,
-          delay: delay
+          body: memo
         }
       });
     } else {
-      // Fallback: main thread setTimeout
-      setTimeout(() => {
-        if (Notification.permission === 'granted') {
-          new Notification('🔔 リマインド: ' + label, {
-            body: memo,
-            tag: id,
-            vibrate: [200, 100, 200],
-            requireInteraction: true
-          });
-        }
-        markTagDone(id);
-      }, delay);
+      // フォールバック: メインスレッドから直接
+      try {
+        new Notification('🔔 リマインド: ' + label, {
+          body: memo,
+          tag: tagId,
+          vibrate: [200, 100, 200],
+          requireInteraction: true
+        });
+      } catch (e) {
+        console.log('Notification failed:', e);
+      }
     }
-
-    // Also set a main-thread timer to update UI
-    setTimeout(() => {
-      markTagDone(id);
-    }, delay);
   }
 
-  function markTagDone(tagId) {
-    const tagEl = document.querySelector(`[data-tag-id="${tagId}"]`);
-    if (tagEl) {
-      tagEl.classList.add('done');
-      tagEl.textContent = '✓ ' + tagEl.textContent;
-    }
-    // Update stored reminder
+  // ========== ポーリング: 通知すべきリマインダーをチェック ==========
+  function checkAndFireReminders() {
+    const now = Date.now();
+    let changed = false;
+
     for (const r of reminders) {
-      const tag = r.tags.find(t => t.id === tagId);
-      if (tag) { tag.done = true; break; }
+      for (const tag of r.tags) {
+        // まだ通知していない & 時刻が来た
+        if (!tag.fired && tag.fireAt <= now) {
+          tag.fired = true;
+          changed = true;
+          fireNotification(tag.id, r.memo, tag.label);
+          console.log('🔔 Fired:', tag.label, r.memo);
+        }
+      }
     }
-    saveReminders();
+
+    if (changed) {
+      saveReminders();
+      renderReminders();
+    }
+
+    updateStatus();
   }
 
-  // ========== Add Reminder ==========
+  // ========== ステータス表示 ==========
+  function updateStatus() {
+    const now = Date.now();
+    let pendingCount = 0;
+    for (const r of reminders) {
+      for (const tag of r.tags) {
+        if (!tag.fired && tag.fireAt > now) {
+          pendingCount++;
+        }
+      }
+    }
+
+    const statusBar = document.getElementById('statusBar');
+    const statusText = document.getElementById('statusText');
+    if (pendingCount > 0) {
+      statusBar.style.display = 'flex';
+      statusText.textContent = '監視中: ' + pendingCount + '件のリマインダー待機中';
+    } else {
+      statusBar.style.display = 'none';
+    }
+  }
+
+  // ========== メインスレッドのポーリング（15秒ごと） ==========
+  setInterval(() => {
+    checkAndFireReminders();
+  }, 15000);
+
+  // 起動時にも即座にチェック
+  checkAndFireReminders();
+
+  // ========== Service Worker を起こし続ける（20秒ごと） ==========
+  setInterval(() => {
+    if (swRegistration && swRegistration.active) {
+      swRegistration.active.postMessage({ type: 'KEEP_ALIVE' });
+    }
+  }, 20000);
+
+  // ========== ページ復帰時にもチェック ==========
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkAndFireReminders();
+    }
+  });
+
+  // フォーカス復帰時にもチェック
+  window.addEventListener('focus', () => {
+    checkAndFireReminders();
+  });
+
+  // ========== リマインダー追加 ==========
   function addReminder() {
     const memo = document.getElementById('memoInput').value.trim();
     if (!memo) {
@@ -616,10 +688,8 @@
         label: label,
         delay: delay,
         fireAt: fireAt,
-        done: false
+        fired: false
       });
-
-      scheduleNotification(tagId, memo, delay, label);
     });
 
     const reminder = {
@@ -633,14 +703,20 @@
     saveReminders();
     renderReminders();
 
-    // Reset form
+    // リセット
     document.getElementById('memoInput').value = '';
     checkboxes.forEach(cb => cb.checked = false);
 
     showToast('✅ ' + tags.length + '件のリマインドを設定しました');
+
+    // 即座にチェック（1分後のリマインドなど短いものに備える）
+    // また、SW にもポーリング開始を再通知
+    if (swRegistration && swRegistration.active) {
+      swRegistration.active.postMessage({ type: 'START_POLLING' });
+    }
   }
 
-  // ========== Delete Reminder ==========
+  // ========== 削除 ==========
   function deleteReminder(id) {
     reminders = reminders.filter(r => r.id !== id);
     saveReminders();
@@ -648,15 +724,30 @@
     showToast('🗑️ 削除しました');
   }
 
-  // ========== Render Reminders ==========
+  // ========== 残り時間の表示 ==========
+  function formatRemaining(ms) {
+    if (ms <= 0) return '';
+    const sec = Math.floor(ms / 1000);
+    if (sec < 60) return sec + '秒';
+    const min = Math.floor(sec / 60);
+    if (min < 60) return min + '分';
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return hr + '時間' + (min % 60 > 0 ? (min % 60) + '分' : '');
+    const day = Math.floor(hr / 24);
+    return day + '日' + (hr % 24 > 0 ? (hr % 24) + '時間' : '');
+  }
+
+  // ========== レンダリング ==========
   function renderReminders() {
     const section = document.getElementById('reminderSection');
     const list = document.getElementById('reminderList');
     const empty = document.getElementById('emptyState');
+    const now = Date.now();
 
     if (reminders.length === 0) {
       section.style.display = 'none';
       empty.style.display = 'block';
+      updateStatus();
       return;
     }
 
@@ -671,41 +762,59 @@
       });
 
       const tagsHtml = r.tags.map(t => {
-        const isDone = t.done || Date.now() >= t.fireAt;
-        return `<span class="reminder-tag ${isDone ? 'done' : ''}" data-tag-id="${t.id}">${isDone ? '✓ ' : ''}${t.label}</span>`;
+        const isFired = t.fired || now >= t.fireAt;
+        const remaining = t.fireAt - now;
+        const countdownText = (!isFired && remaining > 0) ? ' (' + formatRemaining(remaining) + ')' : '';
+
+        return '<span class="reminder-tag ' + (isFired ? 'done' : 'pending') + '" data-tag-id="' + t.id + '">'
+          + (isFired ? '✓ ' : '')
+          + t.label
+          + (countdownText ? '<span class="countdown">' + countdownText + '</span>' : '')
+          + '</span>';
       }).join('');
 
-      return `
-        <div class="reminder-item">
-          <button class="reminder-delete" onclick="deleteReminder('${r.id}')">✕</button>
-          <div class="memo-text">${escapeHtml(r.memo)}</div>
-          <div class="reminder-tags">${tagsHtml}</div>
-          <div class="reminder-time">作成: ${timeStr}</div>
-        </div>
-      `;
+      return '<div class="reminder-item">'
+        + '<button class="reminder-delete" onclick="deleteReminder(\'' + r.id + '\')">✕</button>'
+        + '<div class="memo-text">' + escapeHtml(r.memo) + '</div>'
+        + '<div class="reminder-tags">' + tagsHtml + '</div>'
+        + '<div class="reminder-time">作成: ' + timeStr + '</div>'
+        + '</div>';
     }).join('');
+
+    updateStatus();
   }
 
-  // ========== Restore Reminders on Load ==========
+  // カウントダウン表示を更新（30秒ごと）
+  setInterval(() => {
+    renderReminders();
+  }, 30000);
+
+  // ========== 起動時の復元 ==========
   function restoreReminders() {
     const now = Date.now();
-    reminders.forEach(r => {
-      r.tags.forEach(t => {
-        if (!t.done && t.fireAt > now) {
-          const remaining = t.fireAt - now;
-          scheduleNotification(t.id, r.memo, remaining, t.label);
-        } else {
-          t.done = true;
+    let changed = false;
+
+    // 既に時刻が過ぎているものを fired にマーク（通知は再送しない）
+    for (const r of reminders) {
+      for (const t of r.tags) {
+        if (!t.fired && t.fireAt <= now) {
+          t.fired = true;
+          changed = true;
+          // 起動直前のものだけ通知（5分以内に期限だったもの）
+          if (now - t.fireAt < 5 * 60 * 1000) {
+            fireNotification(t.id, r.memo, t.label);
+          }
         }
-      });
-    });
-    saveReminders();
+      }
+    }
+
+    if (changed) saveReminders();
     renderReminders();
   }
 
   restoreReminders();
 
-  // ========== Utilities ==========
+  // ========== ユーティリティ ==========
   function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -718,13 +827,6 @@
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2500);
   }
-
-  // Keep alive: periodically ping to keep service worker alive
-  setInterval(() => {
-    if (swRegistration && swRegistration.active) {
-      swRegistration.active.postMessage({ type: 'KEEP_ALIVE' });
-    }
-  }, 20000);
 </script>
 
 </body>
