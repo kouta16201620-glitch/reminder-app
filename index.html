@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>リマインダー</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-input: #0f172a;
+    --accent: #38bdf8;
+    --accent-glow: rgba(56, 189, 248, 0.15);
+    --accent-dim: rgba(56, 189, 248, 0.6);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --success: #34d399;
+    --success-bg: rgba(52, 211, 153, 0.1);
+    --danger: #f87171;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 16px 100px;
+  }
+
+  /* Header */
+  .header {
+    padding: 24px 0 8px;
+    text-align: center;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+  }
+  .header h1 span {
+    color: var(--accent);
+  }
+  .header p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Notification permission banner */
+  .permission-banner {
+    background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,146,60,0.1));
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin: 16px 0;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    animation: fadeSlideIn 0.3s ease;
+  }
+  .permission-banner.show { display: flex; }
+  .permission-banner .icon { font-size: 22px; flex-shrink: 0; }
+  .permission-banner .info { flex: 1; }
+  .permission-banner .info p { font-size: 13px; color: #fbbf24; font-weight: 500; }
+  .permission-banner .info small { font-size: 11px; color: rgba(251,191,36,0.7); }
+  .permission-banner button {
+    background: #fbbf24;
+    color: #0f172a;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-family: inherit;
+  }
+
+  /* Section card */
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 20px;
+    border: 1px solid var(--border);
+    animation: fadeSlideIn 0.4s ease;
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-label::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  /* Memo input */
+  .memo-area {
+    width: 100%;
+    min-height: 100px;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 15px;
+    color: var(--text-primary);
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .memo-area:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .memo-area::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Checkbox grid */
+  .time-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .time-option {
+    position: relative;
+  }
+  .time-option input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .time-option label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .time-option label:active {
+    transform: scale(0.97);
+  }
+  .time-option input:checked + label {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    box-shadow: 0 0 0 1px var(--accent-glow);
+  }
+  .checkbox-visual {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--text-muted);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .time-option input:checked + label .checkbox-visual {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .checkbox-visual svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--bg-primary);
+    stroke-width: 3;
+    fill: none;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s;
+  }
+  .time-option input:checked + label .checkbox-visual svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .time-label {
+    display: flex;
+    flex-direction: column;
+  }
+  .time-label .value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .time-label .desc {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent), #0ea5e9);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.5px;
+    margin-top: 20px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .submit-btn:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  .submit-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--success);
+    color: var(--bg-primary);
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 8px 30px rgba(52, 211, 153, 0.3);
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  /* Active reminders */
+  .reminder-list {
+    margin-top: 20px;
+  }
+  .reminder-item {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    animation: fadeSlideIn 0.3s ease;
+    position: relative;
+  }
+  .reminder-item .memo-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    word-break: break-word;
+    line-height: 1.5;
+  }
+  .reminder-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .reminder-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    background: var(--accent-glow);
+    color: var(--accent);
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .reminder-tag.done {
+    background: var(--success-bg);
+    color: var(--success);
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+  .reminder-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-family: inherit;
+  }
+  .reminder-delete:active {
+    background: rgba(248,113,113,0.1);
+    color: var(--danger);
+  }
+  .reminder-time {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .empty-state .icon { font-size: 32px; margin-bottom: 8px; }
+
+  /* Animations */
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>🔔 <span>Remind</span>Me</h1>
+    <p>メモして、忘れない</p>
+  </div>
+
+  <div class="permission-banner" id="permBanner">
+    <div class="icon">⚠️</div>
+    <div class="info">
+      <p>通知の許可が必要です</p>
+      <small>リマインドを受け取るために許可してください</small>
+    </div>
+    <button onclick="requestPermission()">許可する</button>
+  </div>
+
+  <!-- Memo input -->
+  <div class="card">
+    <div class="card-label">メモ内容</div>
+    <textarea class="memo-area" id="memoInput" placeholder="リマインドしたい内容を入力..."></textarea>
+  </div>
+
+  <!-- Time selection -->
+  <div class="card">
+    <div class="card-label">リマインド時刻を選択</div>
+    <div class="time-grid">
+      <div class="time-option">
+        <input type="checkbox" id="t1" value="60000" data-label="1分後">
+        <label for="t1">
+          <div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="time-label"><span class="value">1分後</span><span class="desc">すぐ確認</span></div>
+        </label>
+      </div>
+      <div class="time-option">
+        <input type="checkbox" id="t2" value="180000" data-label="3分後">
+        <label for="t2">
+          <div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="time-label"><span class="value">3分後</span><span class="desc">ちょっと後で</span></div>
+        </label>
+      </div>
+      <div class="time-option">
+        <input type="checkbox" id="t3" value="600000" data-label="10分後">
+        <label for="t3">
+          <div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="time-label"><span class="value">10分後</span><span class="desc">休憩後に</span></div>
+        </label>
+      </div>
+      <div class="time-option">
+        <input type="checkbox" id="t4" value="3600000" data-label="1時間後">
+        <label for="t4">
+          <div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="time-label"><span class="value">1時間後</span><span class="desc">ひと段落したら</span></div>
+        </label>
+      </div>
+      <div class="time-option">
+        <input type="checkbox" id="t5" value="7200000" data-label="2時間後">
+        <label for="t5">
+          <div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="time-label"><span class="value">2時間後</span><span class="desc">午後のタスク</span></div>
+        </label>
+      </div>
+      <div class="time-option">
+        <input type="checkbox" id="t6" value="86400000" data-label="1日後">
+        <label for="t6">
+          <div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="time-label"><span class="value">1日後</span><span class="desc">明日やる</span></div>
+        </label>
+      </div>
+      <div class="time-option">
+        <input type="checkbox" id="t7" value="259200000" data-label="3日後">
+        <label for="t7">
+          <div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="time-label"><span class="value">3日後</span><span class="desc">数日後に確認</span></div>
+        </label>
+      </div>
+      <div class="time-option">
+        <input type="checkbox" id="t8" value="604800000" data-label="1週間後">
+        <label for="t8">
+          <div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="time-label"><span class="value">1週間後</span><span class="desc">来週フォロー</span></div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <button class="submit-btn" id="submitBtn" onclick="addReminder()">
+    リマインダーを設定する
+  </button>
+
+  <!-- Active reminders -->
+  <div class="card" id="reminderSection" style="display:none;">
+    <div class="card-label">設定中のリマインダー</div>
+    <div id="reminderList"></div>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <div class="icon">📝</div>
+    メモを入力して<br>リマインド時刻を選択してください
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ========== Service Worker Registration ==========
+  let swRegistration = null;
+
+  async function registerSW() {
+    if ('serviceWorker' in navigator) {
+      try {
+        swRegistration = await navigator.serviceWorker.register('sw.js');
+        console.log('SW registered');
+      } catch (e) {
+        console.log('SW registration failed:', e);
+      }
+    }
+  }
+  registerSW();
+
+  // ========== Notification Permission ==========
+  function checkPermission() {
+    const banner = document.getElementById('permBanner');
+    if (!('Notification' in window)) {
+      banner.classList.add('show');
+      banner.querySelector('.info p').textContent = 'このブラウザは通知非対応です';
+      banner.querySelector('button').style.display = 'none';
+      return;
+    }
+    if (Notification.permission === 'default') {
+      banner.classList.add('show');
+    } else if (Notification.permission === 'denied') {
+      banner.classList.add('show');
+      banner.querySelector('.info p').textContent = '通知がブロックされています';
+      banner.querySelector('.info small').textContent = 'ブラウザの設定から許可してください';
+      banner.querySelector('button').style.display = 'none';
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+
+  async function requestPermission() {
+    const result = await Notification.requestPermission();
+    checkPermission();
+    if (result === 'granted') {
+      showToast('✅ 通知が許可されました');
+    }
+  }
+
+  checkPermission();
+
+  // ========== Reminder Storage ==========
+  let reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+
+  function saveReminders() {
+    localStorage.setItem('reminders', JSON.stringify(reminders));
+  }
+
+  // ========== Schedule Notification ==========
+  function scheduleNotification(id, memo, delay, label) {
+    // Try Service Worker first (background support)
+    if (swRegistration && swRegistration.active) {
+      swRegistration.active.postMessage({
+        type: 'SCHEDULE_NOTIFICATION',
+        payload: {
+          id: id,
+          title: '🔔 リマインド: ' + label,
+          body: memo,
+          delay: delay
+        }
+      });
+    } else {
+      // Fallback: main thread setTimeout
+      setTimeout(() => {
+        if (Notification.permission === 'granted') {
+          new Notification('🔔 リマインド: ' + label, {
+            body: memo,
+            tag: id,
+            vibrate: [200, 100, 200],
+            requireInteraction: true
+          });
+        }
+        markTagDone(id);
+      }, delay);
+    }
+
+    // Also set a main-thread timer to update UI
+    setTimeout(() => {
+      markTagDone(id);
+    }, delay);
+  }
+
+  function markTagDone(tagId) {
+    const tagEl = document.querySelector(`[data-tag-id="${tagId}"]`);
+    if (tagEl) {
+      tagEl.classList.add('done');
+      tagEl.textContent = '✓ ' + tagEl.textContent;
+    }
+    // Update stored reminder
+    for (const r of reminders) {
+      const tag = r.tags.find(t => t.id === tagId);
+      if (tag) { tag.done = true; break; }
+    }
+    saveReminders();
+  }
+
+  // ========== Add Reminder ==========
+  function addReminder() {
+    const memo = document.getElementById('memoInput').value.trim();
+    if (!memo) {
+      showToast('⚠️ メモを入力してください');
+      return;
+    }
+
+    const checkboxes = document.querySelectorAll('.time-option input:checked');
+    if (checkboxes.length === 0) {
+      showToast('⚠️ 時刻を選択してください');
+      return;
+    }
+
+    if (Notification.permission !== 'granted') {
+      requestPermission();
+      return;
+    }
+
+    const reminderId = 'r_' + Date.now();
+    const now = Date.now();
+    const tags = [];
+
+    checkboxes.forEach(cb => {
+      const delay = parseInt(cb.value);
+      const label = cb.dataset.label;
+      const tagId = reminderId + '_' + delay;
+      const fireAt = now + delay;
+
+      tags.push({
+        id: tagId,
+        label: label,
+        delay: delay,
+        fireAt: fireAt,
+        done: false
+      });
+
+      scheduleNotification(tagId, memo, delay, label);
+    });
+
+    const reminder = {
+      id: reminderId,
+      memo: memo,
+      createdAt: now,
+      tags: tags
+    };
+
+    reminders.unshift(reminder);
+    saveReminders();
+    renderReminders();
+
+    // Reset form
+    document.getElementById('memoInput').value = '';
+    checkboxes.forEach(cb => cb.checked = false);
+
+    showToast('✅ ' + tags.length + '件のリマインドを設定しました');
+  }
+
+  // ========== Delete Reminder ==========
+  function deleteReminder(id) {
+    reminders = reminders.filter(r => r.id !== id);
+    saveReminders();
+    renderReminders();
+    showToast('🗑️ 削除しました');
+  }
+
+  // ========== Render Reminders ==========
+  function renderReminders() {
+    const section = document.getElementById('reminderSection');
+    const list = document.getElementById('reminderList');
+    const empty = document.getElementById('emptyState');
+
+    if (reminders.length === 0) {
+      section.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+
+    section.style.display = 'block';
+    empty.style.display = 'none';
+
+    list.innerHTML = reminders.map(r => {
+      const date = new Date(r.createdAt);
+      const timeStr = date.toLocaleString('ja-JP', {
+        month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+
+      const tagsHtml = r.tags.map(t => {
+        const isDone = t.done || Date.now() >= t.fireAt;
+        return `<span class="reminder-tag ${isDone ? 'done' : ''}" data-tag-id="${t.id}">${isDone ? '✓ ' : ''}${t.label}</span>`;
+      }).join('');
+
+      return `
+        <div class="reminder-item">
+          <button class="reminder-delete" onclick="deleteReminder('${r.id}')">✕</button>
+          <div class="memo-text">${escapeHtml(r.memo)}</div>
+          <div class="reminder-tags">${tagsHtml}</div>
+          <div class="reminder-time">作成: ${timeStr}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ========== Restore Reminders on Load ==========
+  function restoreReminders() {
+    const now = Date.now();
+    reminders.forEach(r => {
+      r.tags.forEach(t => {
+        if (!t.done && t.fireAt > now) {
+          const remaining = t.fireAt - now;
+          scheduleNotification(t.id, r.memo, remaining, t.label);
+        } else {
+          t.done = true;
+        }
+      });
+    });
+    saveReminders();
+    renderReminders();
+  }
+
+  restoreReminders();
+
+  // ========== Utilities ==========
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // Keep alive: periodically ping to keep service worker alive
+  setInterval(() => {
+    if (swRegistration && swRegistration.active) {
+      swRegistration.active.postMessage({ type: 'KEEP_ALIVE' });
+    }
+  }, 20000);
+</script>
+
+</body>
+</html>
