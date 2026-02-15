@@ -3,7 +3,6 @@ self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim(
 
 self.addEventListener('message', (event) => {
   const { type, payload } = event.data;
-
   if (type === 'SHOW_NOTIFICATION') {
     const { id, title, body } = payload;
     self.registration.showNotification(title, {

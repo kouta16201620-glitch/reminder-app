@@ -5,328 +5,203 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>リマインダー</title>
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-primary: #0f172a;
-    --bg-card: #1e293b;
-    --bg-input: #0f172a;
-    --accent: #38bdf8;
-    --accent-glow: rgba(56,189,248,0.15);
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --border: #334155;
-    --success: #34d399;
-    --success-bg: rgba(52,211,153,0.1);
-    --danger: #f87171;
-    --radius: 16px;
-    --radius-sm: 10px;
+    --bg: #0f172a; --card: #1e293b; --input: #0f172a;
+    --accent: #38bdf8; --glow: rgba(56,189,248,0.15);
+    --text: #f1f5f9; --dim: #94a3b8; --muted: #64748b;
+    --border: #334155; --success: #34d399; --warn: #fbbf24;
+    --danger: #f87171; --radius: 16px; --sm: 10px;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'Noto Sans JP', -apple-system, sans-serif;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    min-height: 100dvh;
-    overflow-x: hidden;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .app { max-width:480px; margin:0 auto; padding:0 16px 120px; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Noto Sans JP',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-tap-highlight-color:transparent}
+  .app{max-width:480px;margin:0 auto;padding:0 16px 120px}
 
-  /* Header */
-  .header { padding:24px 0 8px; text-align:center; position:relative; }
-  .header::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:60px; height:3px; background:var(--accent); border-radius:2px; opacity:0.5; }
-  .header h1 { font-size:22px; font-weight:700; letter-spacing:0.5px; }
-  .header h1 span { color:var(--accent); }
-  .header p { font-size:12px; color:var(--text-muted); margin-top:4px; }
+  .header{padding:24px 0 8px;text-align:center;position:relative}
+  .header::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60px;height:3px;background:var(--accent);border-radius:2px;opacity:.5}
+  .header h1{font-size:22px;font-weight:700}.header h1 span{color:var(--accent)}
+  .header p{font-size:12px;color:var(--muted);margin-top:4px}
 
-  /* Keep-alive banner */
-  .keepalive-bar {
-    margin:16px 0;
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    transition: all 0.3s;
-  }
-  .keepalive-bar.inactive {
-    background: rgba(248,113,113,0.08);
-    border: 1px solid rgba(248,113,113,0.25);
-  }
-  .keepalive-bar.active {
-    background: rgba(52,211,153,0.08);
-    border: 1px solid rgba(52,211,153,0.25);
-  }
-  .keepalive-info { flex:1; }
-  .keepalive-info .title { font-size:13px; font-weight:600; }
-  .keepalive-bar.inactive .title { color: var(--danger); }
-  .keepalive-bar.active .title { color: var(--success); }
-  .keepalive-info .desc { font-size:11px; color:var(--text-muted); margin-top:2px; }
-  .keepalive-toggle {
-    position: relative;
-    width: 50px;
-    height: 28px;
-    flex-shrink: 0;
-  }
-  .keepalive-toggle input { opacity:0; width:0; height:0; position:absolute; }
-  .keepalive-toggle .slider {
-    position: absolute;
-    cursor: pointer;
-    top:0; left:0; right:0; bottom:0;
-    background: #475569;
-    border-radius: 28px;
-    transition: 0.3s;
-  }
-  .keepalive-toggle .slider::before {
-    content:'';
-    position:absolute;
-    width:22px; height:22px;
-    left:3px; bottom:3px;
-    background: white;
-    border-radius: 50%;
-    transition: 0.3s;
-  }
-  .keepalive-toggle input:checked + .slider { background: var(--success); }
-  .keepalive-toggle input:checked + .slider::before { transform: translateX(22px); }
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;margin-top:20px;border:1px solid var(--border)}
+  .card-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+  .card-label::before{content:'';width:4px;height:4px;background:var(--accent);border-radius:50%}
 
-  /* Permission banner */
-  .permission-banner {
-    background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,146,60,0.1));
-    border: 1px solid rgba(251,191,36,0.3);
-    border-radius: var(--radius-sm);
-    padding: 14px 16px;
-    margin: 16px 0;
-    display: none;
-    align-items: center;
-    gap: 12px;
-  }
-  .permission-banner.show { display:flex; }
-  .permission-banner .icon { font-size:22px; flex-shrink:0; }
-  .permission-banner .info { flex:1; }
-  .permission-banner .info p { font-size:13px; color:#fbbf24; font-weight:500; }
-  .permission-banner .info small { font-size:11px; color:rgba(251,191,36,0.7); }
-  .permission-banner button {
-    background:#fbbf24; color:#0f172a; border:none;
-    padding:8px 16px; border-radius:8px;
-    font-size:12px; font-weight:700; cursor:pointer; flex-shrink:0; font-family:inherit;
-  }
+  /* Setup box */
+  .setup-box{background:linear-gradient(135deg,rgba(56,189,248,.06),rgba(52,211,153,.04));border:1px solid rgba(56,189,248,.2);border-radius:var(--radius);padding:20px;margin-top:20px}
+  .setup-title{font-size:15px;font-weight:700;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .setup-step{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+  .setup-step:last-child{border-bottom:none}
+  .step-num{background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .step-text{font-size:13px;line-height:1.7}
+  .step-text a{color:var(--accent);text-decoration:underline}
 
-  /* Card */
-  .card {
-    background: var(--bg-card);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-top: 20px;
-    border: 1px solid var(--border);
-  }
-  .card-label {
-    font-size:11px; font-weight:500; color:var(--text-muted);
-    text-transform:uppercase; letter-spacing:1.5px; margin-bottom:12px;
-    display:flex; align-items:center; gap:6px;
-  }
-  .card-label::before { content:''; width:4px; height:4px; background:var(--accent); border-radius:50%; }
+  .topic-display{display:flex;align-items:center;gap:8px;margin:12px 0;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--sm);padding:10px 14px}
+  .topic-display .label{font-size:11px;color:var(--muted);flex-shrink:0}
+  .topic-display .value{font-size:14px;font-weight:600;color:var(--accent);flex:1;word-break:break-all;font-family:monospace}
+  .topic-display .copy-btn{background:var(--accent);color:var(--bg);border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:inherit}
+  .topic-display .copy-btn:active{opacity:.7}
+
+  .setup-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--sm);margin-top:12px;font-size:13px;font-weight:500}
+  .setup-status.ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:var(--success)}
+  .setup-status.pending{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--warn)}
 
   /* Textarea */
-  .memo-area {
-    width:100%; min-height:100px;
-    background:var(--bg-input); border:1.5px solid var(--border);
-    border-radius:var(--radius-sm); padding:14px 16px;
-    font-size:15px; color:var(--text-primary); resize:vertical;
-    font-family:inherit; line-height:1.6; transition:border-color 0.2s; outline:none;
-  }
-  .memo-area:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
-  .memo-area::placeholder { color:var(--text-muted); }
+  .memo-area{width:100%;min-height:100px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--sm);padding:14px 16px;font-size:15px;color:var(--text);resize:vertical;font-family:inherit;line-height:1.6;outline:none;transition:border-color .2s}
+  .memo-area:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+  .memo-area::placeholder{color:var(--muted)}
 
   /* Checkbox grid */
-  .time-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-  .time-option { position:relative; }
-  .time-option input { position:absolute; opacity:0; width:0; height:0; }
-  .time-option label {
-    display:flex; align-items:center; gap:10px;
-    padding:12px 14px; background:var(--bg-input);
-    border:1.5px solid var(--border); border-radius:var(--radius-sm);
-    cursor:pointer; transition:all 0.2s; user-select:none; -webkit-user-select:none;
-  }
-  .time-option label:active { transform:scale(0.97); }
-  .time-option input:checked + label {
-    border-color:var(--accent); background:var(--accent-glow);
-  }
-  .checkbox-visual {
-    width:22px; height:22px; border:2px solid var(--text-muted);
-    border-radius:6px; display:flex; align-items:center; justify-content:center;
-    transition:all 0.2s; flex-shrink:0;
-  }
-  .time-option input:checked + label .checkbox-visual {
-    background:var(--accent); border-color:var(--accent);
-  }
-  .checkbox-visual svg {
-    width:14px; height:14px; stroke:var(--bg-primary); stroke-width:3; fill:none;
-    opacity:0; transform:scale(0.5); transition:all 0.2s;
-  }
-  .time-option input:checked + label .checkbox-visual svg { opacity:1; transform:scale(1); }
-  .time-label { display:flex; flex-direction:column; }
-  .time-label .value { font-size:14px; font-weight:500; }
-  .time-label .desc { font-size:10px; color:var(--text-muted); margin-top:1px; }
+  .time-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .time-option{position:relative}
+  .time-option input{position:absolute;opacity:0;width:0;height:0}
+  .time-option label{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--sm);cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none}
+  .time-option label:active{transform:scale(.97)}
+  .time-option input:checked+label{border-color:var(--accent);background:var(--glow)}
+  .cb{width:22px;height:22px;border:2px solid var(--muted);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+  .time-option input:checked+label .cb{background:var(--accent);border-color:var(--accent)}
+  .cb svg{width:14px;height:14px;stroke:var(--bg);stroke-width:3;fill:none;opacity:0;transform:scale(.5);transition:all .2s}
+  .time-option input:checked+label .cb svg{opacity:1;transform:scale(1)}
+  .tl{display:flex;flex-direction:column}
+  .tl .v{font-size:14px;font-weight:500}
+  .tl .d{font-size:10px;color:var(--muted);margin-top:1px}
+
+  /* Summary option */
+  .summary-option{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+  .summary-option label{background:rgba(251,191,36,.04) !important;border-color:rgba(251,191,36,.2) !important}
+  .summary-option input:checked+label{background:rgba(251,191,36,.1) !important;border-color:var(--warn) !important}
+  .summary-option input:checked+label .cb{background:var(--warn);border-color:var(--warn)}
+  .summary-option .v{color:var(--warn)}
 
   /* Button */
-  .submit-btn {
-    width:100%; padding:16px;
-    background:linear-gradient(135deg,var(--accent),#0ea5e9);
-    color:var(--bg-primary); border:none; border-radius:var(--radius-sm);
-    font-size:16px; font-weight:700; cursor:pointer; font-family:inherit;
-    letter-spacing:0.5px; margin-top:20px; transition:all 0.2s;
-  }
-  .submit-btn:active { transform:scale(0.98); opacity:0.9; }
+  .submit-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),#0ea5e9);color:var(--bg);border:none;border-radius:var(--sm);font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:20px;transition:all .2s;position:relative}
+  .submit-btn:active{transform:scale(.98);opacity:.9}
+  .submit-btn:disabled{opacity:.4;cursor:not-allowed}
+  .submit-btn .spinner{display:none;width:18px;height:18px;border:3px solid rgba(15,23,42,.3);border-top-color:var(--bg);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+  .submit-btn.loading .btn-text{display:none}
+  .submit-btn.loading .spinner{display:block}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
   /* Toast */
-  .toast {
-    position:fixed; bottom:30px; left:50%;
-    transform:translateX(-50%) translateY(100px);
-    background:var(--success); color:var(--bg-primary);
-    padding:14px 28px; border-radius:50px;
-    font-size:14px; font-weight:600;
-    box-shadow:0 8px 30px rgba(52,211,153,0.3);
-    z-index:1000; opacity:0;
-    transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
-    pointer-events:none; white-space:nowrap;
-  }
-  .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);padding:14px 28px;border-radius:50px;font-size:14px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:1000;opacity:0;transition:all .4s cubic-bezier(.175,.885,.32,1.275);pointer-events:none;white-space:nowrap}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .toast.success{background:var(--success);color:var(--bg)}
+  .toast.error{background:var(--danger);color:#fff}
+  .toast.warn{background:var(--warn);color:var(--bg)}
 
   /* Reminder list */
-  .reminder-item {
-    background:var(--bg-input); border:1px solid var(--border);
-    border-radius:var(--radius-sm); padding:14px 16px;
-    margin-bottom:10px; position:relative;
-  }
-  .reminder-item .memo-text {
-    font-size:14px; font-weight:500; margin-bottom:8px;
-    word-break:break-word; line-height:1.5; padding-right:30px;
-  }
-  .reminder-tags { display:flex; flex-wrap:wrap; gap:6px; }
-  .reminder-tag {
-    font-size:11px; padding:3px 10px;
-    background:var(--accent-glow); color:var(--accent);
-    border-radius:20px; font-weight:500;
-  }
-  .reminder-tag.done {
-    background:var(--success-bg); color:var(--success);
-    text-decoration:line-through; opacity:0.6;
-  }
-  .reminder-tag .countdown { font-size:9px; opacity:0.7; margin-left:4px; }
-  .reminder-delete {
-    position:absolute; top:10px; right:10px;
-    background:none; border:none; color:var(--text-muted);
-    font-size:18px; cursor:pointer; padding:4px 8px;
-    border-radius:6px; font-family:inherit;
-  }
-  .reminder-delete:active { background:rgba(248,113,113,0.1); color:var(--danger); }
-  .reminder-time { font-size:10px; color:var(--text-muted); margin-top:6px; }
+  .reminder-item{background:var(--input);border:1px solid var(--border);border-radius:var(--sm);padding:14px 16px;margin-bottom:10px;position:relative}
+  .reminder-item .memo-text{font-size:14px;font-weight:500;margin-bottom:8px;word-break:break-word;line-height:1.5;padding-right:30px}
+  .reminder-tags{display:flex;flex-wrap:wrap;gap:6px}
+  .reminder-tag{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
+  .reminder-tag.cloud{background:rgba(52,211,153,.1);color:var(--success)}
+  .reminder-tag.local{background:var(--glow);color:var(--accent)}
+  .reminder-tag.summary{background:rgba(251,191,36,.1);color:var(--warn)}
+  .reminder-tag .icon{margin-right:3px}
+  .reminder-delete{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:inherit}
+  .reminder-delete:active{background:rgba(248,113,113,.1);color:var(--danger)}
+  .reminder-time{font-size:10px;color:var(--muted);margin-top:6px}
 
-  .empty-state {
-    text-align:center; padding:30px 20px;
-    color:var(--text-muted); font-size:13px; line-height:1.8;
-  }
-  .empty-state .icon { font-size:32px; margin-bottom:8px; }
+  .empty-state{text-align:center;padding:30px 20px;color:var(--muted);font-size:13px;line-height:1.8}
+  .empty-state .icon{font-size:32px;margin-bottom:8px}
 
-  .status-bar {
-    display:flex; align-items:center; justify-content:center;
-    gap:8px; padding:8px 0; font-size:11px; color:var(--text-muted);
-  }
-  .status-dot {
-    width:6px; height:6px; border-radius:50%; background:var(--success);
-    animation:pulse 2s infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  @keyframes fadeSlideIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  /* Info note */
+  .info-note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:8px;padding:8px 12px;background:rgba(100,116,139,.06);border-radius:8px}
+  .info-note strong{color:var(--dim)}
 </style>
 </head>
 <body>
-
 <div class="app">
+
   <div class="header">
     <h1>🔔 <span>Remind</span>Me</h1>
-    <p>メモして、忘れない</p>
+    <p>クラウド通知でメモを忘れない</p>
   </div>
 
-  <!-- バックグラウンド維持トグル -->
-  <div class="keepalive-bar inactive" id="keepaliveBar">
-    <div class="keepalive-info">
-      <div class="title" id="keepaliveTitle">⏸ バックグラウンド動作: OFF</div>
-      <div class="desc" id="keepaliveDesc">ONにするとアプリを閉じても通知が届きます</div>
+  <!-- ===== ntfy セットアップ ===== -->
+  <div class="setup-box" id="setupBox">
+    <div class="setup-title">☁️ 初回セットアップ（1回だけ）</div>
+
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <a href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank">Google Play で「ntfy」アプリをインストール</a>
+        （無料・広告なし）
+      </div>
     </div>
-    <label class="keepalive-toggle">
-      <input type="checkbox" id="keepaliveToggle" onchange="toggleKeepAlive()">
-      <span class="slider"></span>
-    </label>
-  </div>
 
-  <div class="status-bar" id="statusBar" style="display:none">
-    <div class="status-dot"></div>
-    <span id="statusText">監視中</span>
-  </div>
-
-  <div class="permission-banner" id="permBanner">
-    <div class="icon">⚠️</div>
-    <div class="info">
-      <p>通知の許可が必要です</p>
-      <small>リマインドを受け取るために許可してください</small>
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-text">ntfy アプリを開き、右下の「＋」→ 以下のトピック名を入力して購読:</div>
     </div>
-    <button onclick="requestPermission()">許可する</button>
+
+    <div class="topic-display">
+      <span class="label">トピック:</span>
+      <span class="value" id="topicName"></span>
+      <button class="copy-btn" onclick="copyTopic()">コピー</button>
+    </div>
+
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-text">完了！以降はこのアプリからリマインドを設定するだけで、<strong>ブラウザを閉じても ntfy アプリ経由で通知</strong>が届きます。</div>
+    </div>
+
+    <div class="setup-status pending" id="setupStatus">
+      ⏳ ntfy アプリの設定を完了してください
+    </div>
+
+    <button style="background:none;border:none;color:var(--muted);font-size:12px;margin-top:8px;cursor:pointer;font-family:inherit;text-decoration:underline" onclick="confirmSetupDone()">設定完了した →</button>
   </div>
 
+  <!-- セットアップ完了後の表示 -->
+  <div id="setupDoneBadge" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:10px 16px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:var(--sm)">
+      <span style="font-size:13px;color:var(--success);font-weight:500">☁️ クラウド通知: ON</span>
+      <button style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline" onclick="showSetup()">設定を見る</button>
+    </div>
+  </div>
+
+  <!-- ===== メモ入力 ===== -->
   <div class="card">
     <div class="card-label">メモ内容</div>
     <textarea class="memo-area" id="memoInput" placeholder="リマインドしたい内容を入力..."></textarea>
   </div>
 
+  <!-- ===== 時刻選択 ===== -->
   <div class="card">
     <div class="card-label">リマインド時刻を選択</div>
     <div class="time-grid">
-      <div class="time-option">
-        <input type="checkbox" id="t1" value="60000" data-label="1分後">
-        <label for="t1"><div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="time-label"><span class="value">1分後</span><span class="desc">すぐ確認</span></div></label>
-      </div>
-      <div class="time-option">
-        <input type="checkbox" id="t2" value="180000" data-label="3分後">
-        <label for="t2"><div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="time-label"><span class="value">3分後</span><span class="desc">ちょっと後で</span></div></label>
-      </div>
-      <div class="time-option">
-        <input type="checkbox" id="t3" value="600000" data-label="10分後">
-        <label for="t3"><div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="time-label"><span class="value">10分後</span><span class="desc">休憩後に</span></div></label>
-      </div>
-      <div class="time-option">
-        <input type="checkbox" id="t4" value="3600000" data-label="1時間後">
-        <label for="t4"><div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="time-label"><span class="value">1時間後</span><span class="desc">ひと段落したら</span></div></label>
-      </div>
-      <div class="time-option">
-        <input type="checkbox" id="t5" value="7200000" data-label="2時間後">
-        <label for="t5"><div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="time-label"><span class="value">2時間後</span><span class="desc">午後のタスク</span></div></label>
-      </div>
-      <div class="time-option">
-        <input type="checkbox" id="t6" value="86400000" data-label="1日後">
-        <label for="t6"><div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="time-label"><span class="value">1日後</span><span class="desc">明日やる</span></div></label>
-      </div>
-      <div class="time-option">
-        <input type="checkbox" id="t7" value="259200000" data-label="3日後">
-        <label for="t7"><div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="time-label"><span class="value">3日後</span><span class="desc">数日後に確認</span></div></label>
-      </div>
-      <div class="time-option">
-        <input type="checkbox" id="t8" value="604800000" data-label="1週間後">
-        <label for="t8"><div class="checkbox-visual"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="time-label"><span class="value">1週間後</span><span class="desc">来週フォロー</span></div></label>
-      </div>
+      <div class="time-option"><input type="checkbox" id="t1" value="60" data-label="1分後"><label for="t1"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1分後</span><span class="d">すぐ確認</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t2" value="180" data-label="3分後"><label for="t2"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">3分後</span><span class="d">ちょっと後で</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t3" value="600" data-label="10分後"><label for="t3"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">10分後</span><span class="d">休憩後に</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t4" value="3600" data-label="1時間後"><label for="t4"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1時間後</span><span class="d">ひと段落したら</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t5" value="7200" data-label="2時間後"><label for="t5"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">2時間後</span><span class="d">午後のタスク</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t6" value="86400" data-label="1日後"><label for="t6"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1日後</span><span class="d">明日やる</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t7" value="259200" data-label="3日後"><label for="t7"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">3日後</span><span class="d">数日後に確認</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t8" value="604800" data-label="1週間後"><label for="t8"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1週間後</span><span class="d">来週フォロー</span></div></label></div>
+    </div>
+
+    <!-- 翌朝まとめ通知 -->
+    <div class="summary-option">
+      <div class="time-option"><input type="checkbox" id="tSummary" checked><label for="tSummary"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">翌朝 7:00 にまとめ通知</span><span class="d">前日分のメモを一覧で通知</span></div></label></div>
+    </div>
+
+    <div class="info-note">
+      <strong>☁️ クラウド配信:</strong> 通知は ntfy.sh サーバーがスケジュール管理するため、ブラウザを閉じても時間通りに届きます。3日後・1週間後のリマインドも確実です。
     </div>
   </div>
 
-  <button class="submit-btn" onclick="addReminder()">リマインダーを設定する</button>
+  <!-- ===== 送信ボタン ===== -->
+  <button class="submit-btn" id="submitBtn" onclick="addReminder()">
+    <span class="btn-text">リマインダーを設定する</span>
+    <div class="spinner"></div>
+  </button>
 
-  <div class="card" id="reminderSection" style="display:none;">
-    <div class="card-label">設定中のリマインダー</div>
+  <!-- ===== リマインダー一覧 ===== -->
+  <div class="card" id="reminderSection" style="display:none">
+    <div class="card-label">設定済みリマインダー</div>
     <div id="reminderList"></div>
   </div>
 
@@ -338,370 +213,225 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- 無音オーディオ: バックグラウンド維持用 -->
-<audio id="keepAliveAudio" loop playsinline></audio>
-
 <script>
   // ==========================================================
-  // v3: 無音オーディオによるバックグラウンド維持 + ポーリング
+  //  v4: ntfy.sh クラウドプッシュ通知
   //
-  // 問題: Android Chrome はバックグラウンドで数十秒後に
-  //       ページと Service Worker を停止する
-  // 解決: 無音のオーディオを再生し続けることで、
-  //       Chrome のメディアセッションが維持され、
-  //       プロセスが停止されなくなる
+  //  仕組み:
+  //  1. ntfy.sh に HTTP POST でメッセージを送信
+  //  2. Delay ヘッダーで配信時刻をスケジュール
+  //  3. ntfy.sh サーバーが時間管理 → ntfy アプリに PUSH
+  //  4. ブラウザ不要。スマホの電源さえ入っていれば届く
+  //
+  //  翌朝まとめ:
+  //  - メモ作成時に翌朝7:00配信の通知も同時にスケジュール
+  //  - 同じ日に複数メモ → 最後のスケジュールが全メモを含む
   // ==========================================================
 
-  let swRegistration = null;
-  let audioCtx = null;
-  let keepAliveActive = false;
+  const NTFY_SERVER = 'https://ntfy.sh';
 
-  // ========== 無音オーディオの生成と再生 ==========
-  function createSilentAudio() {
-    // WAVヘッダー + 1秒分の無音PCMデータを生成
-    const sampleRate = 8000;
-    const numSamples = sampleRate * 1; // 1秒
-    const buffer = new ArrayBuffer(44 + numSamples * 2);
-    const view = new DataView(buffer);
+  // ========== トピック管理 ==========
+  let ntfyTopic = localStorage.getItem('ntfy_topic_v4');
+  if (!ntfyTopic) {
+    // ランダムなトピック名を生成（推測困難にする）
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let rand = '';
+    for (let i = 0; i < 14; i++) rand += chars[Math.floor(Math.random() * chars.length)];
+    ntfyTopic = 'remindme-' + rand;
+    localStorage.setItem('ntfy_topic_v4', ntfyTopic);
+  }
+  document.getElementById('topicName').textContent = ntfyTopic;
 
-    // WAV header
-    const writeStr = (offset, str) => { for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); };
-    writeStr(0, 'RIFF');
-    view.setUint32(4, 36 + numSamples * 2, true);
-    writeStr(8, 'WAVE');
-    writeStr(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true); // PCM
-    view.setUint16(22, 1, true); // mono
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeStr(36, 'data');
-    view.setUint32(40, numSamples * 2, true);
-    // PCMデータは全て0 (無音)
-
-    const blob = new Blob([buffer], { type: 'audio/wav' });
-    return URL.createObjectURL(blob);
+  function copyTopic() {
+    navigator.clipboard.writeText(ntfyTopic).then(() => {
+      showToast('📋 トピック名をコピーしました', 'success');
+    }).catch(() => {
+      // Fallback
+      const el = document.createElement('textarea');
+      el.value = ntfyTopic;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showToast('📋 トピック名をコピーしました', 'success');
+    });
   }
 
-  function startKeepAlive() {
-    if (keepAliveActive) return;
+  // ========== セットアップ状態管理 ==========
+  let setupDone = localStorage.getItem('ntfy_setup_done') === 'true';
 
-    const audio = document.getElementById('keepAliveAudio');
-    audio.src = createSilentAudio();
-    audio.volume = 0.01; // ほぼ無音
-
-    const playPromise = audio.play();
-    if (playPromise) {
-      playPromise.then(() => {
-        keepAliveActive = true;
-        updateKeepAliveUI();
-        localStorage.setItem('keepalive', 'on');
-        console.log('🔊 Keep-alive audio started');
-      }).catch((e) => {
-        console.log('Audio play failed:', e);
-        showToast('⚠️ 画面をタップしてから再度ONにしてください');
-      });
-    }
+  function confirmSetupDone() {
+    setupDone = true;
+    localStorage.setItem('ntfy_setup_done', 'true');
+    updateSetupUI();
+    showToast('✅ セットアップ完了！', 'success');
   }
 
-  function stopKeepAlive() {
-    const audio = document.getElementById('keepAliveAudio');
-    audio.pause();
-    audio.src = '';
-    keepAliveActive = false;
-    updateKeepAliveUI();
-    localStorage.setItem('keepalive', 'off');
-    console.log('🔇 Keep-alive audio stopped');
+  function showSetup() {
+    document.getElementById('setupBox').style.display = 'block';
+    document.getElementById('setupDoneBadge').style.display = 'none';
   }
 
-  function toggleKeepAlive() {
-    const toggle = document.getElementById('keepaliveToggle');
-    if (toggle.checked) {
-      startKeepAlive();
+  function updateSetupUI() {
+    if (setupDone) {
+      document.getElementById('setupBox').style.display = 'none';
+      document.getElementById('setupDoneBadge').style.display = 'block';
     } else {
-      stopKeepAlive();
+      document.getElementById('setupBox').style.display = 'block';
+      document.getElementById('setupDoneBadge').style.display = 'none';
     }
   }
+  updateSetupUI();
 
-  function updateKeepAliveUI() {
-    const bar = document.getElementById('keepaliveBar');
-    const title = document.getElementById('keepaliveTitle');
-    const desc = document.getElementById('keepaliveDesc');
-    const toggle = document.getElementById('keepaliveToggle');
-
-    if (keepAliveActive) {
-      bar.className = 'keepalive-bar active';
-      title.textContent = '▶ バックグラウンド動作: ON';
-      desc.textContent = 'アプリを閉じても通知が届きます（バッテリー消費: 極小）';
-      toggle.checked = true;
-    } else {
-      bar.className = 'keepalive-bar inactive';
-      title.textContent = '⏸ バックグラウンド動作: OFF';
-      desc.textContent = 'ONにするとアプリを閉じても通知が届きます';
-      toggle.checked = false;
-    }
+  // ========== Service Worker (ローカル通知フォールバック用) ==========
+  let swReg = null;
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(r => { swReg = r; }).catch(() => {});
   }
 
-  // ========== Service Worker ==========
-  async function registerSW() {
-    if ('serviceWorker' in navigator) {
-      try {
-        swRegistration = await navigator.serviceWorker.register('sw.js');
-        console.log('SW registered');
-      } catch (e) {
-        console.log('SW registration failed:', e);
-      }
-    }
-  }
-  registerSW();
+  // ========== ntfy API ==========
+  async function sendNtfy(title, body, delaySec) {
+    const headers = {
+      'Title': title,
+      'Priority': '4',
+      'Tags': 'bell',
+    };
 
-  // ========== 通知許可 ==========
-  function checkPermission() {
-    const banner = document.getElementById('permBanner');
-    if (!('Notification' in window)) {
-      banner.classList.add('show');
-      banner.querySelector('.info p').textContent = 'このブラウザは通知非対応です';
-      banner.querySelector('button').style.display = 'none';
-      return;
+    if (delaySec > 0) {
+      headers['Delay'] = delaySec + 's';
     }
-    if (Notification.permission === 'default') {
-      banner.classList.add('show');
-    } else if (Notification.permission === 'denied') {
-      banner.classList.add('show');
-      banner.querySelector('.info p').textContent = '通知がブロックされています';
-      banner.querySelector('.info small').textContent = 'ブラウザの設定から許可してください';
-      banner.querySelector('button').style.display = 'none';
-    } else {
-      banner.classList.remove('show');
+
+    const resp = await fetch(NTFY_SERVER + '/' + ntfyTopic, {
+      method: 'POST',
+      headers: headers,
+      body: body
+    });
+
+    if (!resp.ok) {
+      const errText = await resp.text().catch(() => '');
+      throw new Error('ntfy error: ' + resp.status + ' ' + errText);
     }
+
+    return await resp.json();
   }
 
-  async function requestPermission() {
-    const result = await Notification.requestPermission();
-    checkPermission();
-    if (result === 'granted') showToast('✅ 通知が許可されました');
+  // ========== 翌朝7:00までの秒数を計算 ==========
+  function getSecondsUntilNext7am() {
+    const now = new Date();
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 7, 0, 0);
+    return Math.floor((target.getTime() - now.getTime()) / 1000);
   }
-  checkPermission();
+
+  // ========== 今日の日付キー ==========
+  function getTodayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  // ========== 本日のメモ蓄積 (まとめ通知用) ==========
+  function getTodayMemos() {
+    const key = 'daily_memos_' + getTodayKey();
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  }
+
+  function addTodayMemo(memo) {
+    const key = 'daily_memos_' + getTodayKey();
+    const memos = getTodayMemos();
+    memos.push(memo);
+    localStorage.setItem(key, JSON.stringify(memos));
+    return memos;
+  }
 
   // ========== リマインダーデータ ==========
-  let reminders = JSON.parse(localStorage.getItem('reminders_v3') || '[]');
-
-  function saveReminders() {
-    localStorage.setItem('reminders_v3', JSON.stringify(reminders));
-  }
-
-  // ========== 通知発火 ==========
-  function fireNotification(tagId, memo, label) {
-    if (Notification.permission !== 'granted') return;
-
-    if (swRegistration && swRegistration.active) {
-      swRegistration.active.postMessage({
-        type: 'SHOW_NOTIFICATION',
-        payload: { id: tagId, title: '🔔 ' + label, body: memo }
-      });
-    } else {
-      try {
-        new Notification('🔔 ' + label, {
-          body: memo, tag: tagId,
-          vibrate: [200,100,200,100,200],
-          requireInteraction: true
-        });
-      } catch(e) { console.log('Notification error:', e); }
-    }
-  }
-
-  // ========== ポーリング: 10秒ごとにチェック ==========
-  function checkAndFire() {
-    const now = Date.now();
-    let changed = false;
-
-    for (const r of reminders) {
-      for (const tag of r.tags) {
-        if (!tag.fired && tag.fireAt <= now) {
-          tag.fired = true;
-          changed = true;
-          fireNotification(tag.id, r.memo, tag.label);
-        }
-      }
-    }
-
-    if (changed) {
-      saveReminders();
-      renderReminders();
-    }
-    updateStatus();
-
-    // デイリーサマリーもチェック
-    checkDailySummary();
-  }
-
-  // ========== デイリーサマリー（毎朝7時に前日分をまとめて通知） ==========
-  function checkDailySummary() {
-    const now = new Date();
-    const hour = now.getHours();
-    const todayStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-
-    // 7時より前なら何もしない
-    if (hour < 7) return;
-
-    // 今日すでに送信済みならスキップ
-    const lastSent = localStorage.getItem('dailySummaryLastSent');
-    if (lastSent === todayStr) return;
-
-    // 前日の0:00〜23:59:59 の範囲を計算
-    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const yesterdayStart = todayMidnight - 24 * 60 * 60 * 1000;
-    const yesterdayEnd = todayMidnight - 1;
-
-    // 前日に作成されたリマインダーを収集
-    const yesterdayReminders = reminders.filter(r =>
-      r.createdAt >= yesterdayStart && r.createdAt <= yesterdayEnd
-    );
-
-    // 送信済みとしてマーク（前日分が0件でも記録して再チェックを防ぐ）
-    localStorage.setItem('dailySummaryLastSent', todayStr);
-
-    if (yesterdayReminders.length === 0) return;
-
-    // 前日の日付表示
-    const yd = new Date(yesterdayStart);
-    const dateLabel = (yd.getMonth()+1) + '月' + yd.getDate() + '日';
-
-    // メモ一覧を組み立て
-    const memoList = yesterdayReminders.map((r, i) => {
-      return (i+1) + '. ' + r.memo;
-    }).join('\n');
-
-    const title = '📋 ' + dateLabel + 'のリマインダーまとめ（' + yesterdayReminders.length + '件）';
-    const body = memoList;
-
-    // 通知を送信
-    if (Notification.permission !== 'granted') return;
-
-    if (swRegistration && swRegistration.active) {
-      swRegistration.active.postMessage({
-        type: 'SHOW_NOTIFICATION',
-        payload: {
-          id: 'daily_summary_' + todayStr,
-          title: title,
-          body: body
-        }
-      });
-    } else {
-      try {
-        new Notification(title, {
-          body: body,
-          tag: 'daily_summary_' + todayStr,
-          vibrate: [200,100,200,100,200],
-          requireInteraction: true
-        });
-      } catch(e) { console.log('Daily summary notification error:', e); }
-    }
-
-    console.log('📋 Daily summary sent:', title);
-  }
-
-  // メインポーリング (10秒間隔)
-  setInterval(checkAndFire, 10000);
-
-  // 画面復帰時に即チェック
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') checkAndFire();
-  });
-  window.addEventListener('focus', checkAndFire);
-
-  // ========== ステータス ==========
-  function updateStatus() {
-    const now = Date.now();
-    let pending = 0;
-    let nearest = Infinity;
-    for (const r of reminders) {
-      for (const t of r.tags) {
-        if (!t.fired && t.fireAt > now) {
-          pending++;
-          nearest = Math.min(nearest, t.fireAt - now);
-        }
-      }
-    }
-    const bar = document.getElementById('statusBar');
-    const text = document.getElementById('statusText');
-    if (pending > 0) {
-      bar.style.display = 'flex';
-      text.textContent = pending + '件待機中 ・ 次: ' + formatRemaining(nearest);
-    } else {
-      bar.style.display = 'none';
-    }
-  }
-
-  function formatRemaining(ms) {
-    if (ms <= 0) return 'まもなく';
-    const s = Math.floor(ms/1000);
-    if (s < 60) return s + '秒後';
-    const m = Math.floor(s/60);
-    if (m < 60) return m + '分後';
-    const h = Math.floor(m/60);
-    if (h < 24) return h + '時間' + (m%60 > 0 ? (m%60)+'分' : '') + '後';
-    const d = Math.floor(h/24);
-    return d + '日後';
-  }
+  let reminders = JSON.parse(localStorage.getItem('reminders_v4') || '[]');
+  function saveReminders() { localStorage.setItem('reminders_v4', JSON.stringify(reminders)); }
 
   // ========== リマインダー追加 ==========
-  function addReminder() {
+  async function addReminder() {
     const memo = document.getElementById('memoInput').value.trim();
-    if (!memo) { showToast('⚠️ メモを入力してください'); return; }
+    if (!memo) { showToast('⚠️ メモを入力してください', 'warn'); return; }
 
-    const cbs = document.querySelectorAll('.time-option input:checked');
-    if (cbs.length === 0) { showToast('⚠️ 時刻を選択してください'); return; }
+    const cbs = document.querySelectorAll('.time-grid .time-option input:checked');
+    const summaryChecked = document.getElementById('tSummary').checked;
 
-    if (Notification.permission !== 'granted') { requestPermission(); return; }
+    if (cbs.length === 0 && !summaryChecked) {
+      showToast('⚠️ 時刻を選択してください', 'warn');
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
 
     const id = 'r_' + Date.now();
     const now = Date.now();
     const tags = [];
+    let allOk = true;
 
-    cbs.forEach(cb => {
-      const delay = parseInt(cb.value);
-      tags.push({
-        id: id + '_' + delay,
-        label: cb.dataset.label,
-        delay: delay,
-        fireAt: now + delay,
-        fired: false
-      });
-    });
+    // 個別リマインドを ntfy にスケジュール
+    for (const cb of cbs) {
+      const delaySec = parseInt(cb.value);
+      const label = cb.dataset.label;
+      const tagId = id + '_' + delaySec;
 
-    reminders.unshift({ id, memo, createdAt: now, tags });
-    saveReminders();
-    renderReminders();
+      try {
+        await sendNtfy('🔔 ' + label, memo, delaySec);
+        tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type: 'cloud' });
+      } catch (e) {
+        console.error('ntfy failed for ' + label + ':', e);
+        tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type: 'failed' });
+        allOk = false;
+      }
+    }
 
+    // 翌朝まとめ通知
+    if (summaryChecked) {
+      const allMemos = addTodayMemo(memo);
+      const secTo7am = getSecondsUntilNext7am();
+
+      const yd = new Date();
+      const dateLabel = (yd.getMonth()+1) + '月' + yd.getDate() + '日';
+
+      const summaryTitle = '📋 ' + dateLabel + 'のリマインダーまとめ（' + allMemos.length + '件）';
+      const summaryBody = allMemos.map((m, i) => (i + 1) + '. ' + m).join('\n');
+
+      try {
+        await sendNtfy(summaryTitle, summaryBody, secTo7am);
+        tags.push({ id: id + '_summary', label: '翌朝7:00まとめ', delaySec: secTo7am, fireAt: now + secTo7am * 1000, type: 'summary' });
+      } catch (e) {
+        console.error('ntfy summary failed:', e);
+        tags.push({ id: id + '_summary', label: '翌朝7:00まとめ', delaySec: secTo7am, fireAt: now + secTo7am * 1000, type: 'failed' });
+        allOk = false;
+      }
+    }
+
+    // ローカルにも保存
+    if (tags.length > 0) {
+      reminders.unshift({ id, memo, createdAt: now, tags });
+      saveReminders();
+      renderReminders();
+    }
+
+    // リセット
     document.getElementById('memoInput').value = '';
     cbs.forEach(cb => cb.checked = false);
 
-    showToast('✅ ' + tags.length + '件のリマインドを設定');
+    btn.classList.remove('loading');
+    btn.disabled = false;
 
-    // バックグラウンド維持が OFF なら自動で ON にする
-    if (!keepAliveActive) {
-      document.getElementById('keepaliveToggle').checked = true;
-      startKeepAlive();
-      showToast('✅ ' + tags.length + '件設定 ・ バックグラウンド動作ON');
+    if (allOk) {
+      showToast('✅ ' + tags.length + '件をクラウドにスケジュール', 'success');
+    } else {
+      showToast('⚠️ 一部の送信に失敗しました', 'error');
     }
   }
 
+  // ========== 削除 ==========
   function deleteReminder(id) {
     reminders = reminders.filter(r => r.id !== id);
     saveReminders();
     renderReminders();
-    showToast('🗑️ 削除しました');
-
-    // 待機中が0件なら keep-alive を止める
-    const now = Date.now();
-    const hasPending = reminders.some(r => r.tags.some(t => !t.fired && t.fireAt > now));
-    if (!hasPending && keepAliveActive) {
-      document.getElementById('keepaliveToggle').checked = false;
-      stopKeepAlive();
-    }
+    showToast('🗑️ 削除しました（配信済み/スケジュール済みの通知は届く場合があります）', 'warn');
   }
 
   // ========== レンダリング ==========
@@ -714,69 +444,79 @@
     if (reminders.length === 0) {
       section.style.display = 'none';
       empty.style.display = 'block';
-      updateStatus();
       return;
     }
     section.style.display = 'block';
     empty.style.display = 'none';
 
     list.innerHTML = reminders.map(r => {
-      const ts = new Date(r.createdAt).toLocaleString('ja-JP',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      const ts = new Date(r.createdAt).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
       const tagsH = r.tags.map(t => {
-        const done = t.fired || now >= t.fireAt;
-        const rem = t.fireAt - now;
-        const cd = (!done && rem > 0) ? '<span class="countdown">(' + formatRemaining(rem) + ')</span>' : '';
-        return '<span class="reminder-tag '+(done?'done':'')+'">'+(done?'✓ ':'')+t.label+cd+'</span>';
+        const past = now >= t.fireAt;
+        let cls = 'cloud';
+        let icon = '☁️';
+        if (t.type === 'summary') { cls = 'summary'; icon = '📋'; }
+        if (t.type === 'failed') { cls = 'cloud'; icon = '❌'; }
+        if (past && t.type !== 'failed') { icon = '✅'; }
+
+        const remaining = t.fireAt - now;
+        const cd = (!past && remaining > 0) ? ' (' + formatRem(remaining) + ')' : '';
+
+        return '<span class="reminder-tag ' + cls + '"><span class="icon">' + icon + '</span>' + t.label + cd + '</span>';
       }).join('');
+
       return '<div class="reminder-item">'
-        +'<button class="reminder-delete" onclick="deleteReminder(\''+r.id+'\')">✕</button>'
-        +'<div class="memo-text">'+escapeHtml(r.memo)+'</div>'
-        +'<div class="reminder-tags">'+tagsH+'</div>'
-        +'<div class="reminder-time">作成: '+ts+'</div>'
-        +'</div>';
+        + '<button class="reminder-delete" onclick="deleteReminder(\'' + r.id + '\')">✕</button>'
+        + '<div class="memo-text">' + esc(r.memo) + '</div>'
+        + '<div class="reminder-tags">' + tagsH + '</div>'
+        + '<div class="reminder-time">作成: ' + ts + '</div>'
+        + '</div>';
     }).join('');
-    updateStatus();
+  }
+
+  function formatRem(ms) {
+    if (ms <= 0) return 'まもなく';
+    const s = Math.floor(ms / 1000);
+    if (s < 60) return s + '秒';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + '分';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + '時間' + (m % 60 > 0 ? (m % 60) + '分' : '');
+    const d = Math.floor(h / 24);
+    return d + '日' + (h % 24 > 0 ? (h % 24) + '時間' : '');
   }
 
   // カウントダウン更新 (30秒ごと)
   setInterval(renderReminders, 30000);
 
-  // ========== 起動時復元 ==========
-  (function restore() {
-    const now = Date.now();
-    let changed = false;
-    for (const r of reminders) {
-      for (const t of r.tags) {
-        if (!t.fired && t.fireAt <= now) {
-          t.fired = true;
-          changed = true;
-          // 起動5分以内のものは通知
-          if (now - t.fireAt < 5*60*1000) fireNotification(t.id, r.memo, t.label);
+  // 初期表示
+  renderReminders();
+
+  // ========== 古い日別メモをクリーンアップ (3日以上前) ==========
+  (function cleanupOldDailyMemos() {
+    const now = new Date();
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('daily_memos_')) {
+        const dateStr = key.replace('daily_memos_', '');
+        const d = new Date(dateStr);
+        if (now - d > 3 * 24 * 60 * 60 * 1000) {
+          localStorage.removeItem(key);
         }
       }
-    }
-    if (changed) saveReminders();
-    renderReminders();
-
-    // 前回 keep-alive ON だったら復帰
-    const hasPending = reminders.some(r => r.tags.some(t => !t.fired && t.fireAt > now));
-    if (hasPending && localStorage.getItem('keepalive') === 'on') {
-      // ユーザー操作が必要なので、タップ待ちにする
-      document.addEventListener('click', function resumeAudio() {
-        startKeepAlive();
-        document.removeEventListener('click', resumeAudio);
-      }, { once: true });
-      document.getElementById('keepaliveToggle').checked = true;
-      const desc = document.getElementById('keepaliveDesc');
-      desc.textContent = '画面をタップするとバックグラウンド動作を再開します';
     }
   })();
 
   // ========== ユーティリティ ==========
-  function escapeHtml(t) { const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
-  function showToast(msg) {
-    const t=document.getElementById('toast'); t.textContent=msg;
-    t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
+  function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + type;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
   }
 </script>
 </body>
