@@ -85,7 +85,7 @@
   @keyframes spin{to{transform:rotate(360deg)}}
 
   /* Toast */
-  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);padding:14px 28px;border-radius:50px;font-size:14px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:1000;opacity:0;transition:all .4s cubic-bezier(.175,.885,.32,1.275);pointer-events:none;white-space:nowrap}
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);padding:14px 28px;border-radius:16px;font-size:13px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:1000;opacity:0;transition:all .4s cubic-bezier(.175,.885,.32,1.275);pointer-events:none;max-width:90vw;text-align:center;line-height:1.5}
   .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
   .toast.success{background:var(--success);color:var(--bg)}
   .toast.error{background:var(--danger);color:#fff}
@@ -152,7 +152,11 @@
       ⏳ ntfy アプリの設定を完了してください
     </div>
 
-    <button style="background:none;border:none;color:var(--muted);font-size:12px;margin-top:8px;cursor:pointer;font-family:inherit;text-decoration:underline" onclick="confirmSetupDone()">設定完了した →</button>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button id="testBtn" style="background:var(--accent);color:var(--bg);border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;flex:1;min-width:140px" onclick="testConnection()">🧪 接続テスト</button>
+      <button style="background:rgba(52,211,153,.15);color:var(--success);border:1px solid rgba(52,211,153,.3);padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;flex:1;min-width:140px" onclick="confirmSetupDone()">✅ 設定完了した</button>
+    </div>
+    <div id="testResult" style="margin-top:8px;font-size:12px;line-height:1.6;color:var(--muted);display:none"></div>
   </div>
 
   <!-- セットアップ完了後の表示 -->
@@ -189,7 +193,8 @@
     </div>
 
     <div class="info-note">
-      <strong>☁️ クラウド配信:</strong> 通知は ntfy.sh サーバーがスケジュール管理するため、ブラウザを閉じても時間通りに届きます。3日後・1週間後のリマインドも確実です。
+      <strong>☁️ クラウド配信:</strong> ntfy.sh サーバーが時間管理するため、ブラウザを閉じても通知が届きます。<br>
+      <strong>⚠️ 注意:</strong> ntfy.sh 無料プランは最大<strong>3日後</strong>まで予約可能です。「1週間後」は送信エラーになる場合があります。
     </div>
   </div>
 
@@ -267,6 +272,34 @@
     showToast('✅ セットアップ完了！', 'success');
   }
 
+  async function testConnection() {
+    const btn = document.getElementById('testBtn');
+    const result = document.getElementById('testResult');
+    btn.disabled = true;
+    btn.textContent = '⏳ テスト中...';
+    result.style.display = 'block';
+    result.innerHTML = '送信中...';
+
+    try {
+      await sendNtfy('🧪 RemindMe 接続テスト', 'この通知が届いていればセットアップ成功です！', 0);
+      result.innerHTML = '<span style="color:var(--success)">✅ 送信成功！ ntfy アプリに通知が届いているか確認してください。<br>届いていれば設定完了です。</span>';
+      const status = document.getElementById('setupStatus');
+      status.className = 'setup-status ok';
+      status.textContent = '✅ ntfy.sh への送信に成功しました';
+    } catch (e) {
+      result.innerHTML = '<span style="color:var(--danger)">❌ 送信失敗: ' + escForHtml(e.message) + '<br><br>'
+        + '考えられる原因:<br>'
+        + '• インターネット接続がない<br>'
+        + '• GitHub Pages（HTTPS）ではなく localhost で開いている<br>'
+        + '• ブラウザの拡張機能がリクエストをブロックしている</span>';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🧪 接続テスト';
+  }
+
+  function escForHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
   function showSetup() {
     document.getElementById('setupBox').style.display = 'block';
     document.getElementById('setupDoneBadge').style.display = 'none';
@@ -289,27 +322,29 @@
     navigator.serviceWorker.register('sw.js').then(r => { swReg = r; }).catch(() => {});
   }
 
-  // ========== ntfy API ==========
+  // ========== ntfy API (URLクエリパラメータ方式) ==========
+  // Content-Type: application/json は CORS プリフライト(OPTIONS)を
+  // 誘発し、ブラウザによってブロックされることがある。
+  // URLクエリパラメータ方式なら「単純リクエスト」扱いでプリフライト不要。
   async function sendNtfy(title, body, delaySec) {
-    const headers = {
-      'Title': title,
-      'Priority': '4',
-      'Tags': 'bell',
-    };
-
+    const params = new URLSearchParams();
+    params.set('title', title);
+    params.set('priority', '4');
+    params.set('tags', 'bell');
     if (delaySec > 0) {
-      headers['Delay'] = delaySec + 's';
+      params.set('delay', delaySec + 's');
     }
 
-    const resp = await fetch(NTFY_SERVER + '/' + ntfyTopic, {
+    const url = NTFY_SERVER + '/' + ntfyTopic + '?' + params.toString();
+
+    const resp = await fetch(url, {
       method: 'POST',
-      headers: headers,
-      body: body
+      body: body   // プレーンテキスト = 単純リクエスト = プリフライト不要
     });
 
     if (!resp.ok) {
-      const errText = await resp.text().catch(() => '');
-      throw new Error('ntfy error: ' + resp.status + ' ' + errText);
+      const errText = await resp.text().catch(() => 'Unknown error');
+      throw new Error(resp.status + ': ' + errText);
     }
 
     return await resp.json();
@@ -369,17 +404,28 @@
     let allOk = true;
 
     // 個別リマインドを ntfy にスケジュール
+    const MAX_DELAY = 259200; // ntfy.sh 無料: 最大3日(259200秒)
+    let failedLabels = [];
     for (const cb of cbs) {
       const delaySec = parseInt(cb.value);
       const label = cb.dataset.label;
       const tagId = id + '_' + delaySec;
+
+      // 3日超チェック
+      if (delaySec > MAX_DELAY) {
+        tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type: 'failed', error: '3日超は非対応' });
+        failedLabels.push(label + ' → ntfy無料は3日後まで');
+        allOk = false;
+        continue;
+      }
 
       try {
         await sendNtfy('🔔 ' + label, memo, delaySec);
         tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type: 'cloud' });
       } catch (e) {
         console.error('ntfy failed for ' + label + ':', e);
-        tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type: 'failed' });
+        tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type: 'failed', error: e.message });
+        failedLabels.push(label + '(' + e.message + ')');
         allOk = false;
       }
     }
@@ -422,7 +468,7 @@
     if (allOk) {
       showToast('✅ ' + tags.length + '件をクラウドにスケジュール', 'success');
     } else {
-      showToast('⚠️ 一部の送信に失敗しました', 'error');
+      showToast('⚠️ 送信失敗: ' + failedLabels.join(', '), 'error');
     }
   }
 
@@ -516,7 +562,8 @@
     t.textContent = msg;
     t.className = 'toast ' + type;
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
+    const dur = (type === 'error') ? 6000 : 3000;
+    setTimeout(() => t.classList.remove('show'), dur);
   }
 </script>
 </body>
