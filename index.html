@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>リマインダー</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --input: #0f172a;
+    --accent: #38bdf8; --glow: rgba(56,189,248,0.15);
+    --text: #f1f5f9; --dim: #94a3b8; --muted: #64748b;
+    --border: #334155; --success: #34d399; --warn: #fbbf24;
+    --danger: #f87171; --radius: 16px; --sm: 10px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Noto Sans JP',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-tap-highlight-color:transparent}
+  .app{max-width:480px;margin:0 auto;padding:0 16px 120px}
+
+  .header{padding:24px 0 8px;text-align:center;position:relative}
+  .header::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60px;height:3px;background:var(--accent);border-radius:2px;opacity:.5}
+  .header h1{font-size:22px;font-weight:700}.header h1 span{color:var(--accent)}
+  .header p{font-size:12px;color:var(--muted);margin-top:4px}
+
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;margin-top:20px;border:1px solid var(--border)}
+  .card-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+  .card-label::before{content:'';width:4px;height:4px;background:var(--accent);border-radius:50%}
+
+  /* Setup box */
+  .setup-box{background:linear-gradient(135deg,rgba(56,189,248,.06),rgba(52,211,153,.04));border:1px solid rgba(56,189,248,.2);border-radius:var(--radius);padding:20px;margin-top:20px}
+  .setup-title{font-size:15px;font-weight:700;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .setup-step{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+  .setup-step:last-child{border-bottom:none}
+  .step-num{background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .step-text{font-size:13px;line-height:1.7}
+  .step-text a{color:var(--accent);text-decoration:underline}
+
+  .topic-display{display:flex;align-items:center;gap:8px;margin:12px 0;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--sm);padding:10px 14px}
+  .topic-display .label{font-size:11px;color:var(--muted);flex-shrink:0}
+  .topic-display .value{font-size:14px;font-weight:600;color:var(--accent);flex:1;word-break:break-all;font-family:monospace}
+  .topic-display .copy-btn{background:var(--accent);color:var(--bg);border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:inherit}
+  .topic-display .copy-btn:active{opacity:.7}
+
+  .setup-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--sm);margin-top:12px;font-size:13px;font-weight:500}
+  .setup-status.ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:var(--success)}
+  .setup-status.pending{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--warn)}
+
+  /* Textarea */
+  .memo-area{width:100%;min-height:100px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--sm);padding:14px 16px;font-size:15px;color:var(--text);resize:vertical;font-family:inherit;line-height:1.6;outline:none;transition:border-color .2s}
+  .memo-area:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+  .memo-area::placeholder{color:var(--muted)}
+
+  /* Checkbox grid */
+  .time-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .time-option{position:relative}
+  .time-option input{position:absolute;opacity:0;width:0;height:0}
+  .time-option label{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--sm);cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none}
+  .time-option label:active{transform:scale(.97)}
+  .time-option input:checked+label{border-color:var(--accent);background:var(--glow)}
+  .cb{width:22px;height:22px;border:2px solid var(--muted);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+  .time-option input:checked+label .cb{background:var(--accent);border-color:var(--accent)}
+  .cb svg{width:14px;height:14px;stroke:var(--bg);stroke-width:3;fill:none;opacity:0;transform:scale(.5);transition:all .2s}
+  .time-option input:checked+label .cb svg{opacity:1;transform:scale(1)}
+  .tl{display:flex;flex-direction:column}
+  .tl .v{font-size:14px;font-weight:500}
+  .tl .d{font-size:10px;color:var(--muted);margin-top:1px}
+
+  /* Summary option */
+  .summary-option{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+  .summary-option label{background:rgba(251,191,36,.04) !important;border-color:rgba(251,191,36,.2) !important}
+  .summary-option input:checked+label{background:rgba(251,191,36,.1) !important;border-color:var(--warn) !important}
+  .summary-option input:checked+label .cb{background:var(--warn);border-color:var(--warn)}
+  .summary-option .v{color:var(--warn)}
+
+  /* Button */
+  .submit-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),#0ea5e9);color:var(--bg);border:none;border-radius:var(--sm);font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:20px;transition:all .2s;position:relative}
+  .submit-btn:active{transform:scale(.98);opacity:.9}
+  .submit-btn:disabled{opacity:.4;cursor:not-allowed}
+  .submit-btn .spinner{display:none;width:18px;height:18px;border:3px solid rgba(15,23,42,.3);border-top-color:var(--bg);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+  .submit-btn.loading .btn-text{display:none}
+  .submit-btn.loading .spinner{display:block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Toast */
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);padding:14px 28px;border-radius:16px;font-size:13px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:1000;opacity:0;transition:all .4s cubic-bezier(.175,.885,.32,1.275);pointer-events:none;max-width:90vw;text-align:center;line-height:1.5}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .toast.success{background:var(--success);color:var(--bg)}
+  .toast.error{background:var(--danger);color:#fff}
+  .toast.warn{background:var(--warn);color:var(--bg)}
+
+  /* Reminder list */
+  .reminder-item{background:var(--input);border:1px solid var(--border);border-radius:var(--sm);padding:14px 16px;margin-bottom:10px;position:relative}
+  .reminder-item .memo-text{font-size:14px;font-weight:500;margin-bottom:8px;word-break:break-word;line-height:1.5;padding-right:30px}
+  .reminder-tags{display:flex;flex-wrap:wrap;gap:6px}
+  .reminder-tag{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
+  .reminder-tag.cloud{background:rgba(52,211,153,.1);color:var(--success)}
+  .reminder-tag.local{background:var(--glow);color:var(--accent)}
+  .reminder-tag.summary{background:rgba(251,191,36,.1);color:var(--warn)}
+  .reminder-tag.relay{background:rgba(168,85,247,.1);color:#a855f7}
+  .reminder-tag .icon{margin-right:3px}
+  .reminder-delete{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:inherit}
+  .reminder-delete:active{background:rgba(248,113,113,.1);color:var(--danger)}
+  .reminder-time{font-size:10px;color:var(--muted);margin-top:6px}
+
+  .empty-state{text-align:center;padding:30px 20px;color:var(--muted);font-size:13px;line-height:1.8}
+  .empty-state .icon{font-size:32px;margin-bottom:8px}
+
+  /* Info note */
+  .info-note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:8px;padding:8px 12px;background:rgba(100,116,139,.06);border-radius:8px}
+  .info-note strong{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <h1>🔔 <span>Remind</span>Me</h1>
+    <p>クラウド通知でメモを忘れない</p>
+  </div>
+
+  <!-- ===== ntfy セットアップ ===== -->
+  <div class="setup-box" id="setupBox">
+    <div class="setup-title">☁️ 初回セットアップ（1回だけ）</div>
+
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <a href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank">Google Play で「ntfy」アプリをインストール</a>
+        （無料・広告なし）
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-text">ntfy アプリを開き、右下の「＋」→ 以下のトピック名を入力して購読:</div>
+    </div>
+
+    <div class="topic-display">
+      <span class="label">トピック:</span>
+      <span class="value" id="topicName"></span>
+      <button class="copy-btn" onclick="copyTopic()">コピー</button>
+    </div>
+
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-text">完了！以降はこのアプリからリマインドを設定するだけで、<strong>ブラウザを閉じても ntfy アプリ経由で通知</strong>が届きます。</div>
+    </div>
+
+    <div class="setup-status pending" id="setupStatus">
+      ⏳ ntfy アプリの設定を完了してください
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button id="testBtn" style="background:var(--accent);color:var(--bg);border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;flex:1;min-width:140px" onclick="testConnection()">🧪 接続テスト</button>
+      <button style="background:rgba(52,211,153,.15);color:var(--success);border:1px solid rgba(52,211,153,.3);padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;flex:1;min-width:140px" onclick="confirmSetupDone()">✅ 設定完了した</button>
+    </div>
+    <div id="testResult" style="margin-top:8px;font-size:12px;line-height:1.6;color:var(--muted);display:none"></div>
+  </div>
+
+  <!-- セットアップ完了後の表示 -->
+  <div id="setupDoneBadge" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:10px 16px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:var(--sm)">
+      <span style="font-size:13px;color:var(--success);font-weight:500">☁️ クラウド通知: ON</span>
+      <button style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline" onclick="showSetup()">設定を見る</button>
+    </div>
+  </div>
+
+  <!-- ===== リレー待機バナー ===== -->
+  <div id="relayBanner" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.2);border-radius:var(--sm)">
+    <div style="font-size:13px;color:#a855f7;font-weight:600">🔄 リレー待機中: <span id="relayCount">0</span>件</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px">次の中継: 約<span id="relayNext">-</span> ・ リレー通知が届いたらこのアプリを開いてください</div>
+  </div>
+
+  <!-- ===== メモ入力 ===== -->
+  <div class="card">
+    <div class="card-label">メモ内容</div>
+    <textarea class="memo-area" id="memoInput" placeholder="リマインドしたい内容を入力..."></textarea>
+  </div>
+
+  <!-- ===== 時刻選択 ===== -->
+  <div class="card">
+    <div class="card-label">リマインド時刻を選択</div>
+    <div class="time-grid">
+      <div class="time-option"><input type="checkbox" id="t1" value="60" data-label="1分後"><label for="t1"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1分後</span><span class="d">すぐ確認</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t2" value="180" data-label="3分後"><label for="t2"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">3分後</span><span class="d">ちょっと後で</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t3" value="600" data-label="10分後"><label for="t3"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">10分後</span><span class="d">休憩後に</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t4" value="3600" data-label="1時間後"><label for="t4"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1時間後</span><span class="d">ひと段落したら</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t5" value="7200" data-label="2時間後"><label for="t5"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">2時間後</span><span class="d">午後のタスク</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t6" value="86400" data-label="1日後"><label for="t6"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1日後</span><span class="d">明日やる</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t7" value="259200" data-label="3日後"><label for="t7"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">3日後</span><span class="d">数日後に確認</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t8" value="604800" data-label="1週間後"><label for="t8"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1週間後</span><span class="d">来週フォロー</span></div></label></div>
+    </div>
+
+    <!-- 翌朝まとめ通知 -->
+    <div class="summary-option">
+      <div class="time-option"><input type="checkbox" id="tSummary" checked><label for="tSummary"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">翌朝 7:00 にまとめ通知</span><span class="d">前日分のメモを一覧で通知</span></div></label></div>
+    </div>
+
+    <div class="info-note">
+      <strong>☁️ クラウド配信:</strong> ntfy.sh サーバーが時間管理するため、ブラウザを閉じても通知が届きます。<br>
+      <strong>🔄 リレー:</strong> 3日超のリマインド（1週間後）は自動リレーで対応。中継通知が届いたらアプリを1回開くだけで残りが再スケジュールされます。
+    </div>
+  </div>
+
+  <!-- ===== 送信ボタン ===== -->
+  <button class="submit-btn" id="submitBtn" onclick="addReminder()">
+    <span class="btn-text">リマインダーを設定する</span>
+    <div class="spinner"></div>
+  </button>
+
+  <!-- ===== リマインダー一覧 ===== -->
+  <div class="card" id="reminderSection" style="display:none">
+    <div class="card-label">設定済みリマインダー</div>
+    <div id="reminderList"></div>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <div class="icon">📝</div>
+    メモを入力して<br>リマインド時刻を選択してください
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ==========================================================
+  //  v4: ntfy.sh クラウドプッシュ通知
+  //
+  //  仕組み:
+  //  1. ntfy.sh に HTTP POST でメッセージを送信
+  //  2. Delay ヘッダーで配信時刻をスケジュール
+  //  3. ntfy.sh サーバーが時間管理 → ntfy アプリに PUSH
+  //  4. ブラウザ不要。スマホの電源さえ入っていれば届く
+  //
+  //  翌朝まとめ:
+  //  - メモ作成時に翌朝7:00配信の通知も同時にスケジュール
+  //  - 同じ日に複数メモ → 最後のスケジュールが全メモを含む
+  // ==========================================================
+
+  const NTFY_SERVER = 'https://ntfy.sh';
+
+  // ========== トピック管理 ==========
+  let ntfyTopic = localStorage.getItem('ntfy_topic_v4');
+  if (!ntfyTopic) {
+    // ランダムなトピック名を生成（推測困難にする）
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let rand = '';
+    for (let i = 0; i < 14; i++) rand += chars[Math.floor(Math.random() * chars.length)];
+    ntfyTopic = 'remindme-' + rand;
+    localStorage.setItem('ntfy_topic_v4', ntfyTopic);
+  }
+  document.getElementById('topicName').textContent = ntfyTopic;
+
+  function copyTopic() {
+    navigator.clipboard.writeText(ntfyTopic).then(() => {
+      showToast('📋 トピック名をコピーしました', 'success');
+    }).catch(() => {
+      // Fallback
+      const el = document.createElement('textarea');
+      el.value = ntfyTopic;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showToast('📋 トピック名をコピーしました', 'success');
+    });
+  }
+
+  // ========== セットアップ状態管理 ==========
+  let setupDone = localStorage.getItem('ntfy_setup_done') === 'true';
+
+  function confirmSetupDone() {
+    setupDone = true;
+    localStorage.setItem('ntfy_setup_done', 'true');
+    updateSetupUI();
+    showToast('✅ セットアップ完了！', 'success');
+  }
+
+  async function testConnection() {
+    const btn = document.getElementById('testBtn');
+    const result = document.getElementById('testResult');
+    btn.disabled = true;
+    btn.textContent = '⏳ テスト中...';
+    result.style.display = 'block';
+    result.innerHTML = '送信中...';
+
+    try {
+      await sendNtfy('🧪 RemindMe 接続テスト', 'この通知が届いていればセットアップ成功です！', 0);
+      result.innerHTML = '<span style="color:var(--success)">✅ 送信成功！ ntfy アプリに通知が届いているか確認してください。<br>届いていれば設定完了です。</span>';
+      const status = document.getElementById('setupStatus');
+      status.className = 'setup-status ok';
+      status.textContent = '✅ ntfy.sh への送信に成功しました';
+    } catch (e) {
+      result.innerHTML = '<span style="color:var(--danger)">❌ 送信失敗: ' + escForHtml(e.message) + '<br><br>'
+        + '考えられる原因:<br>'
+        + '• インターネット接続がない<br>'
+        + '• GitHub Pages（HTTPS）ではなく localhost で開いている<br>'
+        + '• ブラウザの拡張機能がリクエストをブロックしている</span>';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🧪 接続テスト';
+  }
+
+  function escForHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function showSetup() {
+    document.getElementById('setupBox').style.display = 'block';
+    document.getElementById('setupDoneBadge').style.display = 'none';
+  }
+
+  function updateSetupUI() {
+    if (setupDone) {
+      document.getElementById('setupBox').style.display = 'none';
+      document.getElementById('setupDoneBadge').style.display = 'block';
+    } else {
+      document.getElementById('setupBox').style.display = 'block';
+      document.getElementById('setupDoneBadge').style.display = 'none';
+    }
+  }
+  updateSetupUI();
+
+  // ========== Service Worker (ローカル通知フォールバック用) ==========
+  let swReg = null;
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(r => { swReg = r; }).catch(() => {});
+  }
+
+  // ========== ntfy API (URLクエリパラメータ方式) ==========
+  // Content-Type: application/json は CORS プリフライト(OPTIONS)を
+  // 誘発し、ブラウザによってブロックされることがある。
+  // URLクエリパラメータ方式なら「単純リクエスト」扱いでプリフライト不要。
+  async function sendNtfy(title, body, delaySec) {
+    const params = new URLSearchParams();
+    params.set('title', title);
+    params.set('priority', '4');
+    params.set('tags', 'bell');
+    if (delaySec > 0) {
+      params.set('delay', delaySec + 's');
+    }
+
+    const url = NTFY_SERVER + '/' + ntfyTopic + '?' + params.toString();
+
+    const resp = await fetch(url, {
+      method: 'POST',
+      body: body   // プレーンテキスト = 単純リクエスト = プリフライト不要
+    });
+
+    if (!resp.ok) {
+      const errText = await resp.text().catch(() => 'Unknown error');
+      throw new Error(resp.status + ': ' + errText);
+    }
+
+    return await resp.json();
+  }
+
+  // ========== 翌朝7:00までの秒数を計算 ==========
+  function getSecondsUntilNext7am() {
+    const now = new Date();
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 7, 0, 0);
+    return Math.floor((target.getTime() - now.getTime()) / 1000);
+  }
+
+  // ========== 今日の日付キー ==========
+  function getTodayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  // ========== 本日のメモ蓄積 (まとめ通知用) ==========
+  function getTodayMemos() {
+    const key = 'daily_memos_' + getTodayKey();
+    return JSON.parse(localStorage.getItem(key) || '[]');
+  }
+
+  function addTodayMemo(memo) {
+    const key = 'daily_memos_' + getTodayKey();
+    const memos = getTodayMemos();
+    memos.push(memo);
+    localStorage.setItem(key, JSON.stringify(memos));
+    return memos;
+  }
+
+  // ========== リマインダーデータ ==========
+  let reminders = JSON.parse(localStorage.getItem('reminders_v4') || '[]');
+  function saveReminders() { localStorage.setItem('reminders_v4', JSON.stringify(reminders)); }
+
+  // ========== リレーキュー (3日超リマインダー用) ==========
+  let relayQueue = JSON.parse(localStorage.getItem('relay_queue') || '[]');
+  function saveRelays() { localStorage.setItem('relay_queue', JSON.stringify(relayQueue)); }
+
+  const MAX_NTFY_DELAY = 250000; // ~2.9日 (安全マージンを取って259200より少し短く)
+
+  // 3日超のリマインドをリレーで処理
+  async function scheduleWithRelay(tagId, label, memo, totalDelaySec) {
+    if (totalDelaySec <= MAX_NTFY_DELAY) {
+      // 3日以内 → 直接スケジュール
+      await sendNtfy('🔔 ' + label, memo, totalDelaySec);
+      return 'cloud';
+    }
+
+    // 3日超 → リレー: まず2.9日後にリレー通知を送る
+    const remainAfterRelay = totalDelaySec - MAX_NTFY_DELAY;
+    const daysLeft = Math.ceil(remainAfterRelay / 86400);
+
+    await sendNtfy(
+      '📨 リレー中継 (残り約' + daysLeft + '日)',
+      '「' + memo + '」\n\n⬆️ このリマインドを継続するため、RemindMeアプリを開いてください。自動で再スケジュールされます。',
+      MAX_NTFY_DELAY
+    );
+
+    // リレーキューに保存
+    relayQueue.push({
+      id: tagId,
+      memo: memo,
+      label: label,
+      remainingSec: remainAfterRelay,
+      relayFireAt: Date.now() + MAX_NTFY_DELAY * 1000,  // リレー通知が届く時刻
+      originalFireAt: Date.now() + totalDelaySec * 1000,
+      status: 'waiting'  // waiting → ready → done
+    });
+    saveRelays();
+
+    return 'relay';
+  }
+
+  // ========== アプリ起動時: リレーの自動処理 ==========
+  async function processRelays() {
+    const now = Date.now();
+    let processed = 0;
+    let failed = 0;
+
+    for (const relay of relayQueue) {
+      if (relay.status === 'done') continue;
+
+      // リレー通知の時刻を過ぎていたら再スケジュール
+      if (now >= relay.relayFireAt) {
+        relay.status = 'ready';
+
+        // 残り時間を再計算 (目標到着時刻 - 現在)
+        const newRemaining = Math.max(0, Math.floor((relay.originalFireAt - now) / 1000));
+
+        if (newRemaining <= 0) {
+          // もう時間が過ぎている → 即座に通知
+          try {
+            await sendNtfy('🔔 ' + relay.label, relay.memo, 0);
+            relay.status = 'done';
+            processed++;
+          } catch (e) {
+            failed++;
+          }
+        } else if (newRemaining <= MAX_NTFY_DELAY) {
+          // 残り3日以内 → 最終スケジュール
+          try {
+            await sendNtfy('🔔 ' + relay.label, relay.memo, newRemaining);
+            relay.status = 'done';
+            processed++;
+          } catch (e) {
+            failed++;
+          }
+        } else {
+          // まだ3日超 → もう1回リレー
+          const nextRemain = newRemaining - MAX_NTFY_DELAY;
+          const daysLeft = Math.ceil(nextRemain / 86400);
+          try {
+            await sendNtfy(
+              '📨 リレー中継 (残り約' + daysLeft + '日)',
+              '「' + relay.memo + '」\n\n⬆️ RemindMeアプリを開いてください。自動で再スケジュールされます。',
+              MAX_NTFY_DELAY
+            );
+            relay.relayFireAt = now + MAX_NTFY_DELAY * 1000;
+            relay.remainingSec = nextRemain;
+            relay.status = 'waiting';
+            processed++;
+          } catch (e) {
+            failed++;
+          }
+        }
+      }
+    }
+
+    // 完了したリレーを削除
+    relayQueue = relayQueue.filter(r => r.status !== 'done');
+    saveRelays();
+
+    if (processed > 0) {
+      showToast('🔄 ' + processed + '件のリレーを自動再スケジュールしました', 'success');
+      renderReminders();
+    }
+    if (failed > 0) {
+      showToast('⚠️ ' + failed + '件のリレー再送に失敗', 'error');
+    }
+
+    updateRelayBanner();
+  }
+
+  function updateRelayBanner() {
+    const banner = document.getElementById('relayBanner');
+    const pending = relayQueue.filter(r => r.status === 'waiting');
+    if (pending.length > 0) {
+      const nearest = Math.min(...pending.map(r => r.relayFireAt));
+      const remain = nearest - Date.now();
+      banner.style.display = 'block';
+      document.getElementById('relayCount').textContent = pending.length;
+      document.getElementById('relayNext').textContent = formatRem(remain);
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  // ========== リマインダー追加 ==========
+  async function addReminder() {
+    const memo = document.getElementById('memoInput').value.trim();
+    if (!memo) { showToast('⚠️ メモを入力してください', 'warn'); return; }
+
+    const cbs = document.querySelectorAll('.time-grid .time-option input:checked');
+    const summaryChecked = document.getElementById('tSummary').checked;
+
+    if (cbs.length === 0 && !summaryChecked) {
+      showToast('⚠️ 時刻を選択してください', 'warn');
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const id = 'r_' + Date.now();
+    const now = Date.now();
+    const tags = [];
+    let allOk = true;
+    let failedLabels = [];
+    let relayCount = 0;
+
+    // 個別リマインドをスケジュール（リレー対応）
+    for (const cb of cbs) {
+      const delaySec = parseInt(cb.value);
+      const label = cb.dataset.label;
+      const tagId = id + '_' + delaySec;
+
+      try {
+        const type = await scheduleWithRelay(tagId, label, memo, delaySec);
+        tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type });
+        if (type === 'relay') relayCount++;
+      } catch (e) {
+        console.error('Schedule failed for ' + label + ':', e);
+        tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type: 'failed', error: e.message });
+        failedLabels.push(label + '(' + e.message + ')');
+        allOk = false;
+      }
+    }
+
+    // 翌朝まとめ通知
+    if (summaryChecked) {
+      const allMemos = addTodayMemo(memo);
+      const secTo7am = getSecondsUntilNext7am();
+
+      const yd = new Date();
+      const dateLabel = (yd.getMonth()+1) + '月' + yd.getDate() + '日';
+
+      const summaryTitle = '📋 ' + dateLabel + 'のリマインダーまとめ（' + allMemos.length + '件）';
+      const summaryBody = allMemos.map((m, i) => (i + 1) + '. ' + m).join('\n');
+
+      try {
+        await sendNtfy(summaryTitle, summaryBody, secTo7am);
+        tags.push({ id: id + '_summary', label: '翌朝7:00まとめ', delaySec: secTo7am, fireAt: now + secTo7am * 1000, type: 'summary' });
+      } catch (e) {
+        console.error('ntfy summary failed:', e);
+        tags.push({ id: id + '_summary', label: '翌朝7:00まとめ', delaySec: secTo7am, fireAt: now + secTo7am * 1000, type: 'failed' });
+        allOk = false;
+      }
+    }
+
+    // ローカルにも保存
+    if (tags.length > 0) {
+      reminders.unshift({ id, memo, createdAt: now, tags });
+      saveReminders();
+      renderReminders();
+    }
+
+    // リセット
+    document.getElementById('memoInput').value = '';
+    cbs.forEach(cb => cb.checked = false);
+
+    btn.classList.remove('loading');
+    btn.disabled = false;
+
+    if (allOk) {
+      let msg = '✅ ' + tags.length + '件をスケジュール';
+      if (relayCount > 0) msg += '（' + relayCount + '件はリレー経由）';
+      showToast(msg, 'success');
+    } else {
+      showToast('⚠️ 送信失敗: ' + failedLabels.join(', '), 'error');
+    }
+
+    updateRelayBanner();
+  }
+
+  // ========== 削除 ==========
+  function deleteReminder(id) {
+    reminders = reminders.filter(r => r.id !== id);
+    // リレーキューからも関連を削除
+    relayQueue = relayQueue.filter(r => !r.id.startsWith(id));
+    saveReminders();
+    saveRelays();
+    renderReminders();
+    updateRelayBanner();
+    showToast('🗑️ 削除しました', 'warn');
+  }
+
+  // ========== レンダリング ==========
+  function renderReminders() {
+    const section = document.getElementById('reminderSection');
+    const list = document.getElementById('reminderList');
+    const empty = document.getElementById('emptyState');
+    const now = Date.now();
+
+    if (reminders.length === 0) {
+      section.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    section.style.display = 'block';
+    empty.style.display = 'none';
+
+    list.innerHTML = reminders.map(r => {
+      const ts = new Date(r.createdAt).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+      const tagsH = r.tags.map(t => {
+        const past = now >= t.fireAt;
+        let cls = 'cloud';
+        let icon = '☁️';
+        if (t.type === 'relay') { cls = 'summary'; icon = '🔄'; }
+        if (t.type === 'summary') { cls = 'summary'; icon = '📋'; }
+        if (t.type === 'failed') { cls = 'cloud'; icon = '❌'; }
+        if (past && t.type !== 'failed') { icon = '✅'; }
+        if (t.type === 'relay' && !past) { icon = '🔄'; }
+
+        const remaining = t.fireAt - now;
+        const cd = (!past && remaining > 0) ? ' (' + formatRem(remaining) + ')' : '';
+
+        return '<span class="reminder-tag ' + cls + '"><span class="icon">' + icon + '</span>' + t.label + cd + '</span>';
+      }).join('');
+
+      return '<div class="reminder-item">'
+        + '<button class="reminder-delete" onclick="deleteReminder(\'' + r.id + '\')">✕</button>'
+        + '<div class="memo-text">' + esc(r.memo) + '</div>'
+        + '<div class="reminder-tags">' + tagsH + '</div>'
+        + '<div class="reminder-time">作成: ' + ts + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  function formatRem(ms) {
+    if (ms <= 0) return 'まもなく';
+    const s = Math.floor(ms / 1000);
+    if (s < 60) return s + '秒';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + '分';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + '時間' + (m % 60 > 0 ? (m % 60) + '分' : '');
+    const d = Math.floor(h / 24);
+    return d + '日' + (h % 24 > 0 ? (h % 24) + '時間' : '');
+  }
+
+  // カウントダウン更新 (30秒ごと)
+  setInterval(renderReminders, 30000);
+
+  // 初期表示
+  renderReminders();
+
+  // ========== 起動時: リレーの自動処理 ==========
+  processRelays();
+  updateRelayBanner();
+
+  // 画面復帰時にもリレーチェック
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      processRelays();
+    }
+  });
+  window.addEventListener('focus', () => { processRelays(); });
+
+  // ========== 古い日別メモをクリーンアップ (3日以上前) ==========
+  (function cleanupOldDailyMemos() {
+    const now = new Date();
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('daily_memos_')) {
+        const dateStr = key.replace('daily_memos_', '');
+        const d = new Date(dateStr);
+        if (now - d > 3 * 24 * 60 * 60 * 1000) {
+          localStorage.removeItem(key);
+        }
+      }
+    }
+  })();
+
+  // ========== ユーティリティ ==========
+  function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + type;
+    t.classList.add('show');
+    const dur = (type === 'error') ? 6000 : 3000;
+    setTimeout(() => t.classList.remove('show'), dur);
+  }
+</script>
+</body>
+</html>
