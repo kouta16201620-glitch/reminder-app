@@ -7,7 +7,7 @@ self.addEventListener('message', (event) => {
     const { id, title, body } = payload;
     self.registration.showNotification(title, {
       body: body,
-      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">🔔</text></svg>',
+      icon: 'icon-192.png',
       tag: id,
       vibrate: [200, 100, 200, 100, 200],
       requireInteraction: true,
