@@ -182,19 +182,20 @@
 
   <!-- ===== 時刻選択 ===== -->
   <div class="card">
-    <div class="card-label">リマインド時刻を選択</div>
+    <div class="card-label">すぐ通知</div>
     <div class="time-grid">
-      <div class="time-option"><input type="checkbox" id="t1" value="60" data-label="1分後"><label for="t1"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1分後</span><span class="d">すぐ確認</span></div></label></div>
-      <div class="time-option"><input type="checkbox" id="t2" value="180" data-label="3分後"><label for="t2"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">3分後</span><span class="d">ちょっと後で</span></div></label></div>
-      <div class="time-option"><input type="checkbox" id="t3" value="600" data-label="10分後"><label for="t3"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">10分後</span><span class="d">休憩後に</span></div></label></div>
-      <div class="time-option"><input type="checkbox" id="t4" value="3600" data-label="1時間後"><label for="t4"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1時間後</span><span class="d">ひと段落したら</span></div></label></div>
-      <div class="time-option"><input type="checkbox" id="t5" value="7200" data-label="2時間後"><label for="t5"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">2時間後</span><span class="d">午後のタスク</span></div></label></div>
-      <div class="time-option"><input type="checkbox" id="t6" value="86400" data-label="1日後"><label for="t6"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1日後</span><span class="d">明日やる</span></div></label></div>
-      <div class="time-option"><input type="checkbox" id="t7" value="259200" data-label="3日後"><label for="t7"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">3日後</span><span class="d">数日後に確認</span></div></label></div>
-      <div class="time-option"><input type="checkbox" id="t8" value="604800" data-label="1週間後"><label for="t8"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1週間後</span><span class="d">来週フォロー</span></div></label></div>
-      <div class="time-option"><input type="checkbox" id="t9" value="864000" data-label="10日後"><label for="t9"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">10日後</span><span class="d">来週以降に</span></div></label></div>
-      <div class="time-option"><input type="checkbox" id="t10" value="1728000" data-label="20日後"><label for="t10"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">20日後</span><span class="d">約3週間後</span></div></label></div>
-      <div class="time-option"><input type="checkbox" id="t11" value="2592000" data-label="30日後"><label for="t11"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">30日後</span><span class="d">1ヶ月後に確認</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t1" value="600" data-label="10分後" data-type="immediate"><label for="t1"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">10分後</span><span class="d">休憩後に</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t2" value="3600" data-label="1時間後" data-type="immediate"><label for="t2"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1時間後</span><span class="d">ひと段落したら</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t3" value="7200" data-label="2時間後" data-type="immediate"><label for="t3"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">2時間後</span><span class="d">午後のタスク</span></div></label></div>
+    </div>
+
+    <div class="card-label" style="margin-top:18px">📅 日付リマインド <span style="font-weight:400;color:var(--dim);font-size:10px;letter-spacing:0">当日 22:00 にまとめて通知</span></div>
+    <div class="time-grid">
+      <div class="time-option"><input type="checkbox" id="t4" data-label="3日後" data-type="evening" data-days="3"><label for="t4"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">3日後</span><span class="d">数日後に確認</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t5" data-label="1週間後" data-type="evening" data-days="7"><label for="t5"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">1週間後</span><span class="d">来週フォロー</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t6" data-label="10日後" data-type="evening" data-days="10"><label for="t6"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">10日後</span><span class="d">来週以降に</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t7" data-label="20日後" data-type="evening" data-days="20"><label for="t7"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">20日後</span><span class="d">約3週間後</span></div></label></div>
+      <div class="time-option"><input type="checkbox" id="t8" data-label="30日後" data-type="evening" data-days="30"><label for="t8"><div class="cb"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tl"><span class="v">30日後</span><span class="d">1ヶ月後に確認</span></div></label></div>
     </div>
 
     <!-- 翌朝まとめ通知 -->
@@ -203,8 +204,8 @@
     </div>
 
     <div class="info-note">
-      <strong>☁️ クラウド配信:</strong> ntfy.sh サーバーが時間管理するため、ブラウザを閉じても通知が届きます。<br>
-      <strong>🔄 リレー:</strong> 3日超のリマインド（1週間〜30日後）は自動リレーで対応。中継通知が届いたらアプリを1回開くだけで残りが再スケジュールされます。
+      <strong>☁️ クラウド配信:</strong> ブラウザを閉じても通知が届きます。<br>
+      <strong>📅 日付リマインド:</strong> 指定日の22:00にその日のメモをまとめて通知。3日超はリレー中継で届けます。
     </div>
   </div>
 
@@ -398,10 +399,13 @@
   const MAX_NTFY_DELAY = 250000; // ~2.9日 (安全マージンを取って259200より少し短く)
 
   // 3日超のリマインドをリレーで処理
-  async function scheduleWithRelay(tagId, label, memo, totalDelaySec) {
+  // customTitle が指定された場合はそれを使う (日付まとめ通知用)
+  async function scheduleWithRelay(tagId, label, memo, totalDelaySec, customTitle) {
+    const title = customTitle || ('🔔 ' + label);
+
     if (totalDelaySec <= MAX_NTFY_DELAY) {
       // 3日以内 → 直接スケジュール
-      await sendNtfy('🔔 ' + label, memo, totalDelaySec);
+      await sendNtfy(title, memo, totalDelaySec);
       return 'cloud';
     }
 
@@ -411,7 +415,7 @@
 
     await sendNtfy(
       '📨 リレー中継 (残り約' + daysLeft + '日)',
-      '「' + memo + '」\n\n⬆️ このリマインドを継続するため、RemindMeアプリを開いてください。自動で再スケジュールされます。',
+      '「' + memo.substring(0, 100) + '」\n\n⬆️ このリマインドを継続するため、RemindMeアプリを開いてください。自動で再スケジュールされます。',
       MAX_NTFY_DELAY
     );
 
@@ -420,10 +424,11 @@
       id: tagId,
       memo: memo,
       label: label,
+      customTitle: customTitle || null,
       remainingSec: remainAfterRelay,
-      relayFireAt: Date.now() + MAX_NTFY_DELAY * 1000,  // リレー通知が届く時刻
+      relayFireAt: Date.now() + MAX_NTFY_DELAY * 1000,
       originalFireAt: Date.now() + totalDelaySec * 1000,
-      status: 'waiting'  // waiting → ready → done
+      status: 'waiting'
     });
     saveRelays();
 
@@ -449,7 +454,8 @@
         if (newRemaining <= 0) {
           // もう時間が過ぎている → 即座に通知
           try {
-            await sendNtfy('🔔 ' + relay.label, relay.memo, 0);
+            const title = relay.customTitle || ('🔔 ' + relay.label);
+            await sendNtfy(title, relay.memo, 0);
             relay.status = 'done';
             processed++;
           } catch (e) {
@@ -458,7 +464,8 @@
         } else if (newRemaining <= MAX_NTFY_DELAY) {
           // 残り3日以内 → 最終スケジュール
           try {
-            await sendNtfy('🔔 ' + relay.label, relay.memo, newRemaining);
+            const title = relay.customTitle || ('🔔 ' + relay.label);
+            await sendNtfy(title, relay.memo, newRemaining);
             relay.status = 'done';
             processed++;
           } catch (e) {
@@ -514,15 +521,40 @@
     }
   }
 
+  // ========== 日付別メモ蓄積 (22:00 まとめ通知用) ==========
+  function getDateKey(date) {
+    return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+  }
+
+  function getEveningMemos(dateKey) {
+    return JSON.parse(localStorage.getItem('evening_memos_' + dateKey) || '[]');
+  }
+
+  function addEveningMemo(dateKey, memo) {
+    const memos = getEveningMemos(dateKey);
+    memos.push(memo);
+    localStorage.setItem('evening_memos_' + dateKey, JSON.stringify(memos));
+    return memos;
+  }
+
+  function getSecondsUntil22(targetDate) {
+    const target = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 22, 0, 0);
+    return Math.max(0, Math.floor((target.getTime() - Date.now()) / 1000));
+  }
+
+  function formatDateLabel(date) {
+    return (date.getMonth()+1) + '月' + date.getDate() + '日';
+  }
+
   // ========== リマインダー追加 ==========
   async function addReminder() {
     const memo = document.getElementById('memoInput').value.trim();
     if (!memo) { showToast('⚠️ メモを入力してください', 'warn'); return; }
 
-    const cbs = document.querySelectorAll('.time-grid .time-option input:checked');
+    const allCbs = document.querySelectorAll('.time-grid .time-option input:checked');
     const summaryChecked = document.getElementById('tSummary').checked;
 
-    if (cbs.length === 0 && !summaryChecked) {
+    if (allCbs.length === 0 && !summaryChecked) {
       showToast('⚠️ 時刻を選択してください', 'warn');
       return;
     }
@@ -538,32 +570,66 @@
     let failedLabels = [];
     let relayCount = 0;
 
-    // 個別リマインドをスケジュール（リレー対応）
-    for (const cb of cbs) {
+    // --- 即時リマインド (10分後 / 1時間後 / 2時間後) ---
+    for (const cb of allCbs) {
+      if (cb.dataset.type !== 'immediate') continue;
       const delaySec = parseInt(cb.value);
       const label = cb.dataset.label;
       const tagId = id + '_' + delaySec;
 
       try {
-        const type = await scheduleWithRelay(tagId, label, memo, delaySec);
-        tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type });
-        if (type === 'relay') relayCount++;
+        await sendNtfy('🔔 ' + label, memo, delaySec);
+        tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type: 'cloud' });
       } catch (e) {
-        console.error('Schedule failed for ' + label + ':', e);
+        console.error('ntfy failed:', e);
         tags.push({ id: tagId, label, delaySec, fireAt: now + delaySec * 1000, type: 'failed', error: e.message });
         failedLabels.push(label + '(' + e.message + ')');
         allOk = false;
       }
     }
 
-    // 翌朝まとめ通知
+    // --- 日付リマインド (N日後の22:00にまとめ通知) ---
+    // 同じ日付に複数選択がされることはないが、複数回の登録で同じ日に蓄積される
+    const eveningDates = {}; // dateKey → { date, label, days }
+    for (const cb of allCbs) {
+      if (cb.dataset.type !== 'evening') continue;
+      const days = parseInt(cb.dataset.days);
+      const label = cb.dataset.label;
+      const targetDate = new Date(now);
+      targetDate.setDate(targetDate.getDate() + days);
+      const dateKey = getDateKey(targetDate);
+      eveningDates[dateKey] = { date: targetDate, label, days };
+    }
+
+    for (const dateKey of Object.keys(eveningDates)) {
+      const { date, label, days } = eveningDates[dateKey];
+      const allMemos = addEveningMemo(dateKey, memo);
+      const secTo22 = getSecondsUntil22(date);
+      const dateLabel = formatDateLabel(date);
+      const tagId = id + '_evening_' + days;
+      const fireAt = now + secTo22 * 1000;
+
+      const title = '📅 ' + dateLabel + ' のリマインダー（' + allMemos.length + '件）';
+      const body = allMemos.map((m, i) => (i + 1) + '. ' + m).join('\n');
+
+      try {
+        const type = await scheduleWithRelay(tagId, label + ' 22:00', body, secTo22, title);
+        tags.push({ id: tagId, label: label + ' 22:00', delaySec: secTo22, fireAt, type });
+        if (type === 'relay') relayCount++;
+      } catch (e) {
+        console.error('Evening schedule failed:', e);
+        tags.push({ id: tagId, label: label + ' 22:00', delaySec: secTo22, fireAt, type: 'failed', error: e.message });
+        failedLabels.push(label + '(' + e.message + ')');
+        allOk = false;
+      }
+    }
+
+    // --- 翌朝まとめ通知 ---
     if (summaryChecked) {
       const allMemos = addTodayMemo(memo);
       const secTo7am = getSecondsUntilNext7am();
 
-      const yd = new Date();
-      const dateLabel = (yd.getMonth()+1) + '月' + yd.getDate() + '日';
-
+      const dateLabel = formatDateLabel(new Date());
       const summaryTitle = '📋 ' + dateLabel + 'のリマインダーまとめ（' + allMemos.length + '件）';
       const summaryBody = allMemos.map((m, i) => (i + 1) + '. ' + m).join('\n');
 
@@ -586,7 +652,7 @@
 
     // リセット
     document.getElementById('memoInput').value = '';
-    cbs.forEach(cb => cb.checked = false);
+    allCbs.forEach(cb => cb.checked = false);
 
     btn.classList.remove('loading');
     btn.disabled = false;
@@ -687,19 +753,22 @@
   });
   window.addEventListener('focus', () => { processRelays(); });
 
-  // ========== 古い日別メモをクリーンアップ (3日以上前) ==========
-  (function cleanupOldDailyMemos() {
+  // ========== 古いメモをクリーンアップ (3日以上前) ==========
+  (function cleanupOldMemos() {
     const now = new Date();
+    const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('daily_memos_')) {
-        const dateStr = key.replace('daily_memos_', '');
+      if (!key) continue;
+      let dateStr = null;
+      if (key.startsWith('daily_memos_')) dateStr = key.replace('daily_memos_', '');
+      if (key.startsWith('evening_memos_')) dateStr = key.replace('evening_memos_', '');
+      if (dateStr) {
         const d = new Date(dateStr);
-        if (now - d > 3 * 24 * 60 * 60 * 1000) {
-          localStorage.removeItem(key);
-        }
+        if (now - d > 3 * 24 * 60 * 60 * 1000) keysToRemove.push(key);
       }
     }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
   })();
 
   // ========== ユーティリティ ==========
